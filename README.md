@@ -2,8 +2,8 @@
 
 **AI-Powered Healthcare Platform for Rwanda**
 
-[![Test Coverage](https://img.shields.io/badge/coverage-96.42%25-brightgreen.svg)](backend/TEST_SUMMARY.md)
-[![Tests](https://img.shields.io/badge/tests-131%20passing-brightgreen.svg)](backend/TEST_SUMMARY.md)
+[![Test Coverage](https://img.shields.io/badge/coverage-96.74%25-brightgreen.svg)](backend/TEST_SUMMARY.md)
+[![Tests](https://img.shields.io/badge/tests-185%20passing-brightgreen.svg)](backend/TEST_SUMMARY.md)
 [![Django](https://img.shields.io/badge/Django-4.2.9-green.svg)](https://www.djangoproject.com/)
 [![DRF](https://img.shields.io/badge/DRF-3.14.0-red.svg)](https://www.django-rest-framework.org/)
 [![Python](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/)
@@ -15,26 +15,28 @@ BiCare360 is a comprehensive healthcare management platform designed specificall
 
 ## 🎯 Project Overview
 
-BiCare360 bridges the gap between patients and healthcare providers in Rwanda through:
+BiCare360 is a Hybrid Care Bridge system ensuring patients never feel lost after hospital discharge:
 
-- 🏥 **Patient Enrollment** - Rwanda-specific validation (national ID, phone numbers)
-- 🔍 **AI-Powered Triage** - Intelligent symptom assessment and priority scoring
-- 💬 **Multi-Channel Messaging** - SMS, WhatsApp integration for patient communication
-- 📊 **Care Planning** - Comprehensive care plan management and tracking
-- 🤖 **RAG AI Assistant** - Context-aware medical guidance using PGVector
+- 🏥 **Bedside Hand-off** - Capture discharge summaries with risk assessment
+- 👤 **Patient Enrollment** - Rwanda-specific validation (national ID, phone numbers)
+- 💊 **Medication Management** - Track prescriptions and adherence (Coming Week 2)
+- 💬 **Digital Companion** - 24/7 SMS/WhatsApp/AI chatbot support (Planned)
+- 👩‍⚕️ **Nurse Triage** - 10-minute response SLA for urgent concerns (Planned)
+- 🤝 **Abafasha Care Guides** - Human care coordination (Planned)
+- 📊 **Provider Dashboards** - Hospital and insurance analytics (Planned)
 - 🌍 **Multi-Language** - Kinyarwanda, English, and French support
 
 ---
 
 ## 📊 Current Status
 
-### Phase 1: Patient Enrollment API ✅ COMPLETE
+### Phase 1: Foundation & Discharge Management (Week 1/4 Complete)
 
 | Metric | Status |
 |--------|--------|
-| **Development Phase** | Phase 1 of 6 ✅ |
-| **Test Coverage** | 96.42% (exceeds 95% requirement) |
-| **Total Tests** | 131 passing |
+| **Development Phase** | Week 1 of 32 ✅ (3.125% complete) |
+| **Test Coverage** | 96.74% (exceeds 95% requirement) |
+| **Total Tests** | 185 passing (131 patients + 54 enrollment) |
 | **Code Quality** | Production-ready |
 | **Documentation** | Comprehensive |
 
@@ -42,61 +44,76 @@ BiCare360 bridges the gap between patients and healthcare providers in Rwanda th
 
 ## 🚀 Features
 
-### ✅ Phase 1: Patient Enrollment (COMPLETE)
+### ✅ Week 1: Hospital & Discharge Management (COMPLETE)
 
-- **Patient Management**
+- **Hospital Registration**
+  - Rwanda location structure (province/district/sector)
+  - Hospital types (referral/district/health_center/clinic)
+  - EMR integration tracking (manual/API/HL7)
+  - Phone validation (+250 format)
+  - Status management (active/pilot/inactive)
+
+- **Discharge Summary Capture**
+  - Comprehensive discharge data with ICD-10 coding
+  - Auto-calculated: length_of_stay, days_since_discharge, is_high_risk
+  - Risk assessment (low/medium/high/critical)
+  - Bilingual: English + Kinyarwanda (instructions/warnings)
+  - Follow-up requirements tracking
+  - Provider information (attending physician, discharge nurse)
+
+- **Custom Endpoints**
+  - `/high_risk/` - High/critical risk patients
+  - `/recent/?days=7` - Recent discharges
+  - `/needs_follow_up/` - Requires follow-up
+  - `/{id}/risk_analysis/` - Detailed risk assessment
+
+- **Patient Management** (From Phase 1 Basic)
   - Complete CRUD operations
   - Rwanda 16-digit national ID validation
   - +250 phone number format enforcement
-  - Multi-language name support (Kinyarwanda/English/French)
-  - Soft delete with activate/deactivate actions
+  - Multi-language support (Kinyarwanda/English/French)
+  - Address management with Rwanda admin structure
+  - Emergency contacts tracking
 
-- **Address Management**
-  - Rwanda 5-level administrative structure (Province → District → Sector → Cell → Village)
-  - GPS coordinate support with validation
-  - Location-based filtering
+### 🔄 Week 2-4: Medication & Appointments (Weeks 2-4 of Phase 1)
+- Week 2: Medication catalog, prescriptions, adherence tracking
+- Week 3: Appointment scheduling with reminders
+- Week 4: Consent management and data privacy
 
-- **Emergency Contacts**
-  - Multiple contacts per patient
-  - Primary contact designation
-  - Relationship tracking
-
-- **API Features**
-  - RESTful API with Django REST Framework
-  - JWT authentication ready
-  - Pagination, filtering, searching, ordering
-  - Swagger/ReDoc documentation
-  - Query optimization (N+1 prevention)
-
-### 🔄 Phase 2: Care Plan Management (In Progress)
-- Care plan creation and tracking
-- Activity scheduling and monitoring
-- Progress reporting
-- Provider coordination
-
-### 📋 Phase 3: Triage & Assessment (Planned)
-- AI-powered symptom checker
-- Priority scoring algorithm
-- Assessment workflows
-- Medical history integration
-
-### 💬 Phase 4: Messaging System (Planned)
-- SMS integration (Twilio)
+### 📋 Phase 2: SMS/WhatsApp Messaging (Weeks 5-8)
+- Africa's Talking SMS integration
 - WhatsApp Business API
-- Automated notifications
+- Kinyarwanda message templates
+- Automated adherence reminders
 - Two-way communication
 
-### 🤖 Phase 5: AI/RAG Integration (Planned)
-- PGVector document embeddings
-- Semantic search capabilities
-- AI-powered recommendations
-- Medical knowledge base
+### 🤖 Phase 3: AI Chatbot with RAG (Weeks 9-12)
+- PGVector embeddings for medical knowledge
+- Kinyarwanda NLP support
+- Symptom checker with red flags
+- Context-aware responses
+- Automatic escalation to nurses
 
-### 📱 Phase 6: Frontend Applications (Planned)
-- React admin dashboard
-- React Native mobile app
-- PWA for offline support
-- E2E testing
+### 👩‍⚕️ Phase 4: Nurse Triage System (Weeks 13-16)
+- Alert engine with risk scoring
+- 10-minute response SLA tracking
+- Nurse console dashboard
+- Patient communication tools
+- Escalation workflows
+
+### 🤝 Phase 5: Abafasha Care Guides (Weeks 17-20)
+- Care guide mobile app
+- Task assignment and tracking
+- In-person visit scheduling
+- Patient feedback collection
+- Performance metrics
+
+### 📊 Phase 6-8: Dashboards & Production (Weeks 21-32)
+- Hospital provider dashboards
+- Insurance/RSSB analytics
+- USSD fallback for feature phones
+- React Native patient app
+- Full production deployment
 
 ---
 
@@ -106,18 +123,24 @@ BiCare360 bridges the gap between patients and healthcare providers in Rwanda th
 BiCare360/
 ├── backend/                    # Django REST API
 │   ├── apps/
-│   │   └── patients/          # Patient enrollment module ✅
-│   │       ├── models.py      # Patient, Address, EmergencyContact
-│   │       ├── serializers.py # DRF serializers
-│   │       ├── views.py       # API ViewSets
-│   │       └── tests/         # 131 comprehensive tests
+│   │   ├── patients/          # Patient management ✅
+│   │   │   ├── models.py      # Patient, Address, EmergencyContact
+│   │   │   ├── serializers.py # 5 serializers (89% coverage)
+│   │   │   ├── views.py       # 3 ViewSets (100% coverage)
+│   │   │   └── tests/         # 131 tests passing
+│   │   └── enrollment/        # Discharge & hospital management ✅
+│   │       ├── models.py      # Hospital, DischargeSummary (98.67% coverage)
+│   │       ├── serializers.py # 4 serializers (95.65% coverage)
+│   │       ├── views.py       # 2 ViewSets (97.53% coverage)
+│   │       ├── admin.py       # Django admin (96.15% coverage)
+│   │       └── tests/         # 54 tests passing
 │   ├── bicare360/
 │   │   └── settings/          # Split settings (dev/test/prod)
 │   ├── requirements/          # Dependency management
-│   └── docs/                  # API documentation
+│   └── htmlcov/               # Coverage reports
 │
-├── frontend/                  # React admin dashboard (Coming Soon)
-├── mobile/                    # React Native app (Coming Soon)
+├── frontend/                  # React admin dashboard (Weeks 27-32)
+├── mobile/                    # React Native app (Weeks 27-32)
 └── docs/                      # Project documentation
 
 ```
