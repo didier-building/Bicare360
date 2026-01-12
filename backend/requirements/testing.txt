@@ -1,0 +1,24 @@
+-r base.txt
+
+# Testing Framework
+pytest==8.0.0
+pytest-django==4.7.0
+pytest-cov==4.1.0
+pytest-xdist==3.5.0
+pytest-asyncio==0.23.3
+pytest-mock==3.12.0
+
+# Coverage & Quality
+coverage[toml]==7.4.1
+
+# Test Data & Mocking
+factory-boy==3.3.0
+Faker==22.6.0
+freezegun==1.4.0
+responses==0.24.1
+
+# Property-Based Testing (for clinical logic)
+hypothesis==6.92.2
+
+# API Testing
+httpx==0.26.0
