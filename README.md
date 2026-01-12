@@ -1,6 +1,6 @@
 # BiCare360 🏥
 
-**AI-Powered Healthcare Platform for Rwanda**
+**Post-Discharge Healthcare Management System for Rwanda**
 
 [![Test Coverage](https://img.shields.io/badge/coverage-96.74%25-brightgreen.svg)](backend/TEST_SUMMARY.md)
 [![Tests](https://img.shields.io/badge/tests-185%20passing-brightgreen.svg)](backend/TEST_SUMMARY.md)
@@ -9,22 +9,74 @@
 [![Python](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-Proprietary-blue.svg)](LICENSE)
 
-BiCare360 is a comprehensive healthcare management platform designed specifically for Rwanda's healthcare system, featuring AI-powered triage, multi-language support, and real-time patient care coordination.
+## 🎯 What We're Building
+
+BiCare360 is a **comprehensive healthcare management system** specifically designed for Rwanda's healthcare system. We're building a "Hybrid Care Bridge" that ensures patients never feel lost after hospital discharge by combining AI-powered automation with human care coordination.
+
+**Core Problem:** In Rwanda and across Africa, patients are often discharged from hospitals with minimal follow-up support, leading to medication non-adherence, missed appointments, and preventable readmissions.
+
+**Our Solution:** A complete care coordination platform that bridges the gap between hospital and home through:
+
+### The "Hybrid Care Bridge" Components:
+
+1. 🏥 **Bedside Hand-off** ✅ *Week 1 Complete*
+   - Hospital registration and EMR integration tracking
+   - Comprehensive discharge summary capture with ICD-10 coding
+   - Risk assessment (low/medium/high/critical)
+   - Bilingual instructions (English + Kinyarwanda)
+
+2. 👤 **Patient Management** ✅ *Phase 1 Basic Complete*
+   - Rwanda national ID validation (16 digits)
+   - Phone number validation (+250 format)
+   - Address with Rwanda administrative structure
+   - Emergency contacts
+
+3. 💊 **Medication Management** 🔄 *Week 2 - In Progress*
+   - Prescription tracking from discharge
+   - Adherence monitoring
+   - SMS reminders for medication schedules
+
+4. 💬 **24/7 Digital Companion** 📋 *Phases 2-3 Planned*
+   - SMS/WhatsApp integration (Africa's Talking)
+   - AI chatbot with RAG in Kinyarwanda
+   - Automated patient check-ins
+
+5. 👩‍⚕️ **Nurse Triage System** 📋 *Phase 4 Planned*
+   - Alert engine with 10-minute response SLA
+   - Nurse console dashboard
+   - Escalation workflows
+
+6. 🤝 **Abafasha Care Guides** 📋 *Phase 5 Planned*
+   - Mobile app for care coordinators
+   - In-person visit scheduling
+   - Patient feedback collection
+
+7. 📊 **Provider Dashboards** 📋 *Phases 6-8 Planned*
+   - Hospital performance analytics
+   - Insurance/RSSB integration
+   - Cost savings reporting
 
 ---
 
-## 🎯 Project Overview
+## 📍 Current Development Stage
 
-BiCare360 is a Hybrid Care Bridge system ensuring patients never feel lost after hospital discharge:
+**Timeline:** 32-week implementation (8 months)  
+**Current Progress:** Week 1 of 32 (3.125% complete)  
+**Current Phase:** Phase 1 - Foundation & Discharge Management  
+**Status:** Week 1 ✅ Complete, Week 2 🔄 Starting
 
-- 🏥 **Bedside Hand-off** - Capture discharge summaries with risk assessment
-- 👤 **Patient Enrollment** - Rwanda-specific validation (national ID, phone numbers)
-- 💊 **Medication Management** - Track prescriptions and adherence (Coming Week 2)
-- 💬 **Digital Companion** - 24/7 SMS/WhatsApp/AI chatbot support (Planned)
-- 👩‍⚕️ **Nurse Triage** - 10-minute response SLA for urgent concerns (Planned)
-- 🤝 **Abafasha Care Guides** - Human care coordination (Planned)
-- 📊 **Provider Dashboards** - Hospital and insurance analytics (Planned)
-- 🌍 **Multi-Language** - Kinyarwanda, English, and French support
+### What's Been Built (Week 1):
+- ✅ Hospital registration system
+- ✅ Discharge summary capture with risk assessment
+- ✅ Patient enrollment API
+- ✅ 185 comprehensive tests (96.74% coverage)
+- ✅ Django admin interfaces
+- ✅ API documentation (Swagger/ReDoc)
+
+### What's Next (Weeks 2-4):
+- 🔄 Week 2: Medication catalog, prescriptions, adherence tracking
+- 📋 Week 3: Appointment scheduling with SMS reminders
+- 📋 Week 4: Consent management and GDPR compliance
 
 ---
 
