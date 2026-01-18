@@ -15,6 +15,7 @@ from apps.enrollment.serializers import (
     DischargeSummaryDetailSerializer,
     DischargeSummaryCreateSerializer
 )
+from apps.core.permissions import IsAuthenticatedUser
 
 
 class HospitalViewSet(viewsets.ModelViewSet):
@@ -22,6 +23,7 @@ class HospitalViewSet(viewsets.ModelViewSet):
     
     queryset = Hospital.objects.all()
     serializer_class = HospitalSerializer
+    permission_classes = [IsAuthenticatedUser]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['hospital_type', 'province', 'district', 'status', 'emr_integration_type']
     search_fields = ['name', 'code']
@@ -56,6 +58,7 @@ class DischargeSummaryViewSet(viewsets.ModelViewSet):
     queryset = DischargeSummary.objects.select_related(
         'patient', 'hospital', 'created_by'
     ).all()
+    permission_classes = [IsAuthenticatedUser]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = [
         'patient', 'hospital', 'discharge_condition', 'risk_level',

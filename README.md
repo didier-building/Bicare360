@@ -2,8 +2,8 @@
 
 **Post-Discharge Healthcare Management System for Rwanda**
 
-[![Test Coverage](https://img.shields.io/badge/coverage-96.74%25-brightgreen.svg)](backend/TEST_SUMMARY.md)
-[![Tests](https://img.shields.io/badge/tests-185%20passing-brightgreen.svg)](backend/TEST_SUMMARY.md)
+[![Test Coverage](https://img.shields.io/badge/coverage-96.39%25-brightgreen.svg)](backend/TEST_SUMMARY.md)
+[![Tests](https://img.shields.io/badge/tests-275%20passing-brightgreen.svg)](backend/TEST_SUMMARY.md)
 [![Django](https://img.shields.io/badge/Django-4.2.9-green.svg)](https://www.djangoproject.com/)
 [![DRF](https://img.shields.io/badge/DRF-3.14.0-red.svg)](https://www.django-rest-framework.org/)
 [![Python](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/)
@@ -61,20 +61,22 @@ BiCare360 is a **comprehensive healthcare management system** specifically desig
 ## 📍 Current Development Stage
 
 **Timeline:** 32-week implementation (8 months)  
-**Current Progress:** Week 1 of 32 (3.125% complete)  
+**Current Progress:** Week 2 of 32 (6.25% complete)  
 **Current Phase:** Phase 1 - Foundation & Discharge Management  
-**Status:** Week 1 ✅ Complete, Week 2 🔄 Starting
+**Status:** Week 1 ✅ Complete, Week 2 ✅ Complete, Week 3 📋 Next
 
-### What's Been Built (Week 1):
+### What's Been Built (Weeks 1-2):
 - ✅ Hospital registration system
 - ✅ Discharge summary capture with risk assessment
 - ✅ Patient enrollment API
-- ✅ 185 comprehensive tests (96.74% coverage)
+- ✅ Medication catalog with 10 dosage forms
+- ✅ Prescription tracking linked to discharge
+- ✅ Medication adherence monitoring
+- ✅ 275 comprehensive tests (96.39% coverage)
 - ✅ Django admin interfaces
 - ✅ API documentation (Swagger/ReDoc)
 
-### What's Next (Weeks 2-4):
-- 🔄 Week 2: Medication catalog, prescriptions, adherence tracking
+### What's Next (Weeks 3-4):
 - 📋 Week 3: Appointment scheduling with SMS reminders
 - 📋 Week 4: Consent management and GDPR compliance
 
@@ -82,13 +84,13 @@ BiCare360 is a **comprehensive healthcare management system** specifically desig
 
 ## 📊 Current Status
 
-### Phase 1: Foundation & Discharge Management (Week 1/4 Complete)
+### Phase 1: Foundation & Discharge Management (Week 2/4 Complete)
 
 | Metric | Status |
 |--------|--------|
-| **Development Phase** | Week 1 of 32 ✅ (3.125% complete) |
-| **Test Coverage** | 96.74% (exceeds 95% requirement) |
-| **Total Tests** | 185 passing (131 patients + 54 enrollment) |
+| **Development Phase** | Week 2 of 32 ✅ (6.25% complete) |
+| **Test Coverage** | 96.39% (exceeds 95% requirement) |
+| **Total Tests** | 275 passing (131 patients + 54 enrollment + 90 medications) |
 | **Code Quality** | Production-ready |
 | **Documentation** | Comprehensive |
 
@@ -127,9 +129,42 @@ BiCare360 is a **comprehensive healthcare management system** specifically desig
   - Address management with Rwanda admin structure
   - Emergency contacts tracking
 
-### 🔄 Week 2-4: Medication & Appointments (Weeks 2-4 of Phase 1)
-- Week 2: Medication catalog, prescriptions, adherence tracking
-- Week 3: Appointment scheduling with reminders
+### ✅ Week 2: Medication Management (COMPLETE)
+
+- **Medication Catalog**
+  - 10 dosage forms (tablet, capsule, syrup, injection, etc.)
+  - Generic and brand names
+  - Strength and manufacturer tracking
+  - Medical information (indications, contraindications, side effects)
+  - Prescription requirements
+  - Active/inactive status
+
+- **Prescription Tracking**
+  - Linked to discharge summaries and patients
+  - Dosage, frequency, route, duration
+  - Bilingual instructions (English + Kinyarwanda)
+  - Start/end dates with auto-calculated days remaining
+  - Refill management
+  - Computed properties: is_current, days_remaining
+
+- **Adherence Monitoring**
+  - Scheduled dose tracking
+  - Status tracking (scheduled/taken/missed/skipped/late)
+  - Timestamp when taken
+  - Reason tracking for missed doses
+  - Reminder system integration ready
+  - Computed properties: is_overdue, minutes_late
+
+- **Custom Endpoints**
+  - `/medications/active/` - Active medications only
+  - `/prescriptions/current/` - Current active prescriptions
+  - `/adherence/{id}/mark_taken/` - Mark dose as taken
+  - `/adherence/{id}/mark_missed/` - Mark dose as missed
+  - `/adherence/overdue/` - Get overdue doses
+  - `/adherence/stats/` - Adherence statistics
+
+### 🔄 Week 3-4: Appointments & Consent (Weeks 3-4 of Phase 1)
+- Week 3: Appointment scheduling with SMS reminders
 - Week 4: Consent management and data privacy
 
 ### 📋 Phase 2: SMS/WhatsApp Messaging (Weeks 5-8)

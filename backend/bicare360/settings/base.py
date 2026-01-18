@@ -41,8 +41,14 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
+    "apps.core",
+    "apps.authentication",
     "apps.patients",
     "apps.enrollment",
+    "apps.medications",
+    "apps.appointments",
+    "apps.consents",
+    "apps.messaging",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -156,6 +162,12 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
+
+# Africa's Talking Configuration
+AFRICASTALKING_USERNAME = env("AFRICASTALKING_USERNAME", default="sandbox")
+AFRICASTALKING_API_KEY = env("AFRICASTALKING_API_KEY", default="")
+AFRICASTALKING_SANDBOX = env.bool("AFRICASTALKING_SANDBOX", default=True)
+AFRICASTALKING_FROM = env("AFRICASTALKING_FROM", default="BiCare360")  # SMS sender ID
 
 # DRF Spectacular (API Documentation)
 SPECTACULAR_SETTINGS = {

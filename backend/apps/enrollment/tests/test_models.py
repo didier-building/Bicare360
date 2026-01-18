@@ -178,6 +178,7 @@ class TestDischargeSummaryModel:
         discharge = DischargeSummaryFactory(
             patient=patient,
             hospital=hospital,
+            admission_date=date(2026, 1, 5),
             discharge_date=date(2026, 1, 10)
         )
         assert "John Doe" in str(discharge)
