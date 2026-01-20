@@ -35,6 +35,25 @@ app.conf.beat_schedule = {
         "task": "apps.messaging.tasks.retry_failed_messages",
         "schedule": crontab(minute="*/15"),  # Every 15 minutes
     },
+    # Run alert engine every 10 minutes
+    "run-alert-engine": {
+        "task": "apps.nursing.tasks.run_alert_engine",
+        "schedule": crontab(minute="*/10"),  # Every 10 minutes
+    },
+    # Send appointment email reminders daily at 8 AM
+    "send-appointment-email-reminders": {
+        "task": "apps.messaging.tasks.send_appointment_reminder_emails",
+        "schedule": crontab(hour=8, minute=0),  # Daily at 8:00 AM
+    },
+    # Send medication email reminders daily at 9 AM and 8 PM
+    "send-medication-email-reminders-morning": {
+        "task": "apps.messaging.tasks.send_medication_reminder_emails",
+        "schedule": crontab(hour=9, minute=0),  # Daily at 9:00 AM
+    },
+    "send-medication-email-reminders-evening": {
+        "task": "apps.messaging.tasks.send_medication_reminder_emails",
+        "schedule": crontab(hour=20, minute=0),  # Daily at 8:00 PM
+    },
 }
 
 

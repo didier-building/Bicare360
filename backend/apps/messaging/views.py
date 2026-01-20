@@ -19,6 +19,8 @@ from apps.messaging.serializers import (
 )
 from apps.messaging.tasks import send_message_task, process_message_queue, send_bulk_messages
 from apps.messaging.tasks import send_message_task, send_bulk_messages, schedule_appointment_reminders
+from apps.messaging.analytics import MessageAnalytics
+from apps.messaging.sms_service import MessageService
 from apps.core.permissions import IsAuthenticatedUser
 
 
@@ -101,6 +103,112 @@ class MessageViewSet(viewsets.ModelViewSet):
             "total_messages": total_messages,
             "by_status": by_status,
             "by_type": by_type,
+        })
+
+    @action(detail=False, methods=["get"])
+    def analytics(self, request):
+        """Get comprehensive message analytics."""
+        days = int(request.query_params.get('days', 7))
+        
+        analytics = MessageAnalytics()
+        
+        return Response({
+            "delivery_stats": analytics.get_delivery_stats(days=days),
+            "channel_breakdown": analytics.get_channel_breakdown(days=days),
+            "template_usage": analytics.get_template_usage(days=30),
+        })
+
+    @action(detail=False, methods=["get"])
+    def dashboard(self, request):
+        """Get dashboard summary with key metrics."""
+        analytics = MessageAnalytics()
+        return Response(analytics.get_dashboard_summary())
+
+    @action(detail=False, methods=["get"])
+    def failed_messages(self, request):
+        """Get list of failed messages for retry."""
+        limit = int(request.query_params.get('limit', 50))
+        analytics = MessageAnalytics()
+        
+        return Response({
+            "failed_messages": analytics.get_failed_messages(limit=limit),
+            "total_count": Message.objects.filter(status='failed').count()
+        })
+
+    @action(detail=True, methods=["post"])
+    def retry(self, request, pk=None):
+        """Retry sending a failed message."""
+        message = self.get_object()
+        
+        if message.status not in ['failed', 'cancelled']:
+            return Response(
+                {"error": "Only failed or cancelled messages can be retried"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Reset message status
+        message.status = 'pending'
+        message.save()
+        
+        # Send via message service
+        service = MessageService()
+        success = service.send_message(message.id)
+        
+        return Response({
+            "success": success,
+            "message_id": message.id,
+            "new_status": message.status
+        })
+
+    @action(detail=False, methods=["post"])
+    def retry_all_failed(self, request):
+        """Retry all failed messages."""
+        limit = int(request.data.get('limit', 10))
+        
+        failed_messages = Message.objects.filter(status='failed').order_by('-created_at')[:limit]
+        
+        service = MessageService()
+        results = []
+        
+        for message in failed_messages:
+            message.status = 'pending'
+            message.save()
+            success = service.send_message(message.id)
+            results.append({
+                "message_id": message.id,
+                "success": success
+            })
+        
+        return Response({
+            "attempted": len(results),
+            "results": results
+        })
+
+    @action(detail=False, methods=["get"])
+    def hourly_volume(self, request):
+        """Get message volume by hour."""
+        days = int(request.query_params.get('days', 1))
+        analytics = MessageAnalytics()
+        
+        return Response(analytics.get_hourly_volume(days=days))
+
+    @action(detail=False, methods=["get"])
+    def patient_history(self, request):
+        """Get message history for a specific patient."""
+        patient_id = request.query_params.get('patient_id')
+        
+        if not patient_id:
+            return Response(
+                {"error": "patient_id is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        limit = int(request.query_params.get('limit', 20))
+        analytics = MessageAnalytics()
+        
+        return Response({
+            "patient_id": patient_id,
+            "messages": analytics.get_patient_message_history(int(patient_id), limit=limit)
         })
 
     @action(detail=False, methods=["post"])

@@ -43,12 +43,14 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "apps.core",
     "apps.authentication",
+    "apps.users",
     "apps.patients",
     "apps.enrollment",
     "apps.medications",
     "apps.appointments",
     "apps.consents",
     "apps.messaging",
+    "apps.nursing",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -152,7 +154,12 @@ SIMPLE_JWT = {
 # CORS
 CORS_ALLOWED_ORIGINS = env.list(
     "CORS_ALLOWED_ORIGINS",
-    default=["http://localhost:3000", "http://127.0.0.1:3000"],
+    default=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
 )
 
 # Celery Configuration
@@ -168,6 +175,22 @@ AFRICASTALKING_USERNAME = env("AFRICASTALKING_USERNAME", default="sandbox")
 AFRICASTALKING_API_KEY = env("AFRICASTALKING_API_KEY", default="")
 AFRICASTALKING_SANDBOX = env.bool("AFRICASTALKING_SANDBOX", default=True)
 AFRICASTALKING_FROM = env("AFRICASTALKING_FROM", default="BiCare360")  # SMS sender ID
+
+# SMS Demo Mode (use mock service when True or when API key is missing)
+SMS_DEMO_MODE = env.bool("SMS_DEMO_MODE", default=True)
+
+# Email Configuration
+EMAIL_BACKEND = env(
+    "EMAIL_BACKEND",
+    default="django.core.mail.backends.console.EmailBackend"  # Development: prints to console
+)
+EMAIL_HOST = env("EMAIL_HOST", default="smtp.gmail.com")
+EMAIL_PORT = env.int("EMAIL_PORT", default=587)
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="BiCare360 <noreply@bicare360.rw>")
+SERVER_EMAIL = env("SERVER_EMAIL", default="BiCare360 <noreply@bicare360.rw>")
 
 # DRF Spectacular (API Documentation)
 SPECTACULAR_SETTINGS = {

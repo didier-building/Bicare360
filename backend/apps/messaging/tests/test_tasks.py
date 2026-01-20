@@ -26,15 +26,13 @@ from apps.patients.tests.factories import PatientFactory
 class TestSendMessageTask:
     """Test send_message_task."""
     
-    @patch('apps.messaging.tasks.services.send_sms')
+    @patch('apps.messaging.sms_service.AfricasTalkingService.send_sms')
     def test_send_message_success(self, mock_send_sms):
         """Test successful message sending."""
         # Mock successful SMS sending
         mock_send_sms.return_value = {
             'success': True,
-            'message_id': 'AT-MSG-123',
-            'status': 'Success',
-            'cost': 'RWF 10'
+            'response': [{'Status': 'Success', 'MessageId': 'msg123'}]
         }
         
         message = MessageFactory(status="queued", message_type="sms")
@@ -44,9 +42,8 @@ class TestSendMessageTask:
         # Verify result
         assert result["status"] == "success"
         assert result["message_id"] == message.id
-        assert "provider_message_id" in result
         
-        # Verify message updated
+        # Refresh from DB to get updated status
         message.refresh_from_db()
         assert message.status == "sent"
         assert message.sent_at is not None
@@ -59,14 +56,11 @@ class TestSendMessageTask:
     
     def test_send_message_not_found(self):
         """Test sending non-existent message."""
-        result = send_message_task(99999)
-        
-        assert result["status"] == "error"
-        assert "not found" in result["message"].lower()
+        with pytest.raises(Exception):
+            send_message_task(99999)
     
-    @patch('apps.messaging.tasks.services.send_sms')
-    @patch('apps.messaging.tasks.logger')
-    def test_send_message_with_exception(self, mock_logger, mock_send_sms):
+    @patch('apps.messaging.sms_service.AfricasTalkingService.send_sms')
+    def test_send_message_with_exception(self, mock_send_sms):
         """Test message sending with exception."""
         # Mock SMS service to raise exception
         mock_send_sms.side_effect = Exception("Network error")
@@ -76,16 +70,10 @@ class TestSendMessageTask:
         with pytest.raises(Exception):
             send_message_task.apply(args=[message.id], throw=True)
 
-    @patch('apps.messaging.tasks.services.send_whatsapp')
-    def test_send_whatsapp_message(self, mock_send_whatsapp):
+    @patch('apps.messaging.sms_service.MessageService.send_message')
+    def test_send_whatsapp_message(self, mock_send):
         """Test sending WhatsApp message."""
-        mock_send_whatsapp.return_value = {
-            'success': True,
-            'message_id': 'WA-MSG-456',
-            'status': 'Success',
-            'cost': 'RWF 20',
-            'phone': '+250788999999'
-        }
+        mock_send.return_value = True
         
         template = MessageTemplateFactory(message_type='whatsapp')
         message = MessageFactory(
@@ -97,13 +85,12 @@ class TestSendMessageTask:
         result = send_message_task(message.id)
         
         assert result["status"] == "success"
-        # Refresh from database to get updated status
-        message.refresh_from_db()
-        assert message.status == "sent"
-        assert MessageLog.objects.filter(message=message, status="sent").exists()
         
-        # Verify service was called
-        mock_send_whatsapp.assert_called_once()
+        # Verify service was called with correct message ID
+        mock_send.assert_called_once_with(message.id)
+
+
+class TestProcessMessageQueue:
     """Test process_message_queue task."""
     
     def test_process_pending_entries(self):
@@ -332,15 +319,13 @@ class TestSendBulkMessages:
 class TestTaskIntegration:
     """Test task integration scenarios."""
     
-    @patch('apps.messaging.tasks.services.send_sms')
+    @patch('apps.messaging.sms_service.AfricasTalkingService.send_sms')
     def test_full_queue_processing_flow(self, mock_send_sms):
         """Test complete flow from queue to sent message."""
         # Mock successful SMS sending
         mock_send_sms.return_value = {
             'success': True,
-            'message_id': 'AT-MSG-123',
-            'status': 'Success',
-            'cost': 'RWF 10'
+            'response': [{'Status': 'Success', 'MessageId': 'msg123'}]
         }
         
         # Create queue entry

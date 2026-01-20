@@ -269,7 +269,7 @@ class TestWhatsAppService:
 class TestConvenienceFunctions:
     """Test convenience functions."""
     
-    @patch('apps.messaging.services.SMSService')
+    @patch('apps.messaging.mock_sms_service.HybridSMSService')
     def test_send_sms_function(self, mock_service_class):
         """Test send_sms convenience function."""
         mock_service = Mock()
@@ -279,9 +279,9 @@ class TestConvenienceFunctions:
         result = send_sms('+250788123456', 'Test')
         
         assert result['success'] is True
-        mock_service.send_sms.assert_called_once_with('+250788123456', 'Test', None)
+        mock_service.send_sms.assert_called_once_with('+250788123456', 'Test')
     
-    @patch('apps.messaging.services.SMSService')
+    @patch('apps.messaging.mock_sms_service.HybridSMSService')
     def test_send_bulk_sms_function(self, mock_service_class):
         """Test send_bulk_sms convenience function."""
         mock_service = Mock()
@@ -293,4 +293,4 @@ class TestConvenienceFunctions:
         
         assert result['success'] is True
         assert result['total'] == 2
-        mock_service.send_bulk_sms.assert_called_once_with(recipients, 'Bulk test', None)
+        mock_service.send_bulk_sms.assert_called_once_with(recipients, 'Bulk test')

@@ -2,7 +2,7 @@
 Celery tasks for async message processing.
 
 This module contains all asynchronous tasks for the messaging app including:
-- Sending individual messages
+- Sending individual messages (SMS/Email)
 - Processing the message queue
 - Retrying failed messages
 - Bulk message operations
@@ -13,7 +13,8 @@ from django.db.models import Q
 from datetime import timedelta
 import logging
 
-from apps.messaging import services
+from apps.messaging.sms_service import MessageService
+from apps.messaging.email_service import EmailService
 
 logger = logging.getLogger(__name__)
 
@@ -36,67 +37,16 @@ def send_message_task(self, message_id):
     4. Update message status
     5. Retry on failure (max 3 times)
     """
-    from apps.messaging.models import Message, MessageLog
-    
     try:
-        message = Message.objects.select_related(
-            'recipient_patient', 'template', 'appointment'
-        ).get(id=message_id)
+        service = MessageService()
+        result = service.send_message(message_id)
         
-        # Send via Africa's Talking based on message type
-        logger.info(f"Sending {message.message_type} message {message_id} to {message.recipient_phone}")
-        
-        if message.message_type == 'sms':
-            result = services.send_sms(
-                recipient=message.recipient_phone,
-                message=message.content
-            )
-        elif message.message_type == 'whatsapp':
-            result = services.send_whatsapp(
-                recipient=message.recipient_phone,
-                message=message.content,
-                template_name=message.template.name if message.template else None
-            )
-        else:
-            raise ValueError(f"Unsupported message type: {message.message_type}")
-        
-        if result['success']:
-            # Extract cost as decimal (Africa's Talking returns "RWF 10", extract "10")
-            cost_str = result.get('cost', '0')
-            if isinstance(cost_str, str) and ' ' in cost_str:
-                # Extract number from "RWF 10" format
-                cost = cost_str.split()[-1]
-            else:
-                cost = cost_str
-            
-            # Update message status
-            message.status = "sent"
-            message.sent_at = timezone.now()
-            message.save()
-            
-            # Create success log
-            MessageLog.objects.create(
-                message=message,
-                status="sent",
-                provider_message_id=result.get('message_id'),
-                provider_response=result,
-                cost=cost,
-                currency="RWF",  # Rwanda Francs
-            )
-            
+        if result:
             logger.info(f"Successfully sent message {message_id}")
-            return {
-                "status": "success",
-                "message_id": message_id,
-                "provider_message_id": result.get('message_id'),
-            }
+            return {"status": "success", "message_id": message_id}
         else:
-            raise Exception(result.get('error', 'Failed to send message'))
+            raise Exception("Failed to send message")
             
-    except Message.DoesNotExist:
-        logger.error(f"Message {message_id} not found")
-        return {"status": "error", "message": "Message not found"}
-        
     except Exception as exc:
         logger.error(f"Error sending message {message_id}: {exc}")
         
@@ -394,3 +344,198 @@ def schedule_appointment_reminders(appointment_ids, reminder_times):
 
 # Import F for retry_failed_messages
 from django.db.models import F
+
+
+@shared_task(bind=True, max_retries=3)
+def send_email_notification_task(
+    self,
+    recipient_email: str,
+    notification_type: str,
+    context_data: dict
+):
+    """
+    Send email notification asynchronously.
+    
+    Args:
+        recipient_email: Recipient's email address
+        notification_type: Type of notification (appointment, medication, discharge, etc.)
+        context_data: Context data for email template
+        
+    Returns:
+        dict: Result with status and details
+    """
+    try:
+        email_service = EmailService()
+        
+        if notification_type == "appointment_reminder":
+            result = email_service.send_appointment_reminder_email(
+                patient_email=recipient_email,
+                patient_name=context_data.get('patient_name'),
+                appointment_date=context_data.get('appointment_date'),
+                appointment_time=context_data.get('appointment_time'),
+                hospital_name=context_data.get('hospital_name'),
+                provider_name=context_data.get('provider_name', 'Your Provider'),
+                appointment_type=context_data.get('appointment_type', 'Follow-up')
+            )
+        elif notification_type == "medication_reminder":
+            result = email_service.send_medication_reminder_email(
+                patient_email=recipient_email,
+                patient_name=context_data.get('patient_name'),
+                medication_name=context_data.get('medication_name'),
+                dosage=context_data.get('dosage'),
+                timing=context_data.get('timing'),
+                instructions=context_data.get('instructions', '')
+            )
+        elif notification_type == "discharge_summary":
+            result = email_service.send_discharge_summary_email(
+                patient_email=recipient_email,
+                patient_name=context_data.get('patient_name'),
+                hospital_name=context_data.get('hospital_name'),
+                discharge_date=context_data.get('discharge_date'),
+                diagnosis=context_data.get('diagnosis', ''),
+                follow_up_instructions=context_data.get('follow_up_instructions', '')
+            )
+        else:
+            raise ValueError(f"Unknown notification type: {notification_type}")
+        
+        if result['success']:
+            logger.info(f"Email sent successfully to {recipient_email}")
+            return result
+        else:
+            raise Exception(f"Failed to send email: {result.get('error')}")
+            
+    except Exception as exc:
+        logger.error(f"Error sending email to {recipient_email}: {exc}")
+        raise self.retry(exc=exc)
+
+
+@shared_task
+def send_appointment_reminder_emails():
+    """
+    Send email reminders for upcoming appointments.
+    
+    Runs periodically to check for appointments that need email reminders
+    and sends them asynchronously.
+    
+    Returns:
+        dict: Summary of emails sent
+    """
+    from apps.appointments.models import Appointment
+    
+    # Find appointments in next 24 hours that haven't been reminded by email
+    now = timezone.now()
+    tomorrow = now + timedelta(days=1)
+    
+    appointments = Appointment.objects.filter(
+        appointment_datetime__range=(now, tomorrow),
+        status='scheduled'
+    ).select_related('patient', 'hospital')
+    
+    sent_count = 0
+    failed_count = 0
+    
+    for appointment in appointments:
+        try:
+            # Check if patient has email
+            patient_email = getattr(appointment.patient, 'email', None)
+            if not patient_email:
+                logger.debug(f"No email for patient {appointment.patient.id}, skipping")
+                continue
+            
+            # Prepare context
+            context = {
+                'patient_name': appointment.patient.full_name,
+                'appointment_date': appointment.appointment_datetime.strftime('%Y-%m-%d'),
+                'appointment_time': appointment.appointment_datetime.strftime('%H:%M'),
+                'hospital_name': appointment.hospital.name,
+                'provider_name': getattr(appointment, 'provider_name', 'Your Provider'),
+                'appointment_type': getattr(appointment, 'appointment_type', 'Follow-up')
+            }
+            
+            # Send email asynchronously
+            send_email_notification_task.delay(
+                patient_email,
+                'appointment_reminder',
+                context
+            )
+            
+            sent_count += 1
+            logger.info(f"Scheduled email reminder for appointment {appointment.id}")
+            
+        except Exception as exc:
+            logger.error(f"Error scheduling email for appointment {appointment.id}: {exc}")
+            failed_count += 1
+    
+    logger.info(f"Scheduled {sent_count} appointment email reminders")
+    
+    return {
+        'sent': sent_count,
+        'failed': failed_count,
+        'total': sent_count + failed_count
+    }
+
+
+@shared_task
+def send_medication_reminder_emails():
+    """
+    Send email reminders for medication adherence.
+    
+    Checks for patients with active prescriptions and sends reminders
+    for medications that should be taken today.
+    
+    Returns:
+        dict: Summary of emails sent
+    """
+    from apps.medications.models import Prescription
+    from apps.patients.models import Patient
+    
+    # Find active prescriptions
+    now = timezone.now()
+    today = now.date()
+    
+    active_prescriptions = Prescription.objects.filter(
+        is_active=True,
+        start_date__lte=today
+    ).select_related('patient', 'medication')
+    
+    sent_count = 0
+    failed_count = 0
+    
+    for prescription in active_prescriptions:
+        try:
+            # Check if patient has email
+            patient_email = getattr(prescription.patient, 'email', None)
+            if not patient_email:
+                continue
+            
+            # Prepare context
+            context = {
+                'patient_name': prescription.patient.full_name,
+                'medication_name': prescription.medication.name,
+                'dosage': prescription.dosage,
+                'timing': prescription.frequency or 'As prescribed',
+                'instructions': prescription.instructions or 'Take as directed'
+            }
+            
+            # Send email asynchronously
+            send_email_notification_task.delay(
+                patient_email,
+                'medication_reminder',
+                context
+            )
+            
+            sent_count += 1
+            logger.info(f"Scheduled medication email reminder for patient {prescription.patient.id}")
+            
+        except Exception as exc:
+            logger.error(f"Error scheduling medication email: {exc}")
+            failed_count += 1
+    
+    logger.info(f"Scheduled {sent_count} medication email reminders")
+    
+    return {
+        'sent': sent_count,
+        'failed': failed_count,
+        'total': sent_count + failed_count
+    }
+

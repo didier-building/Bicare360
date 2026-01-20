@@ -1,7 +1,8 @@
 """
-Africa's Talking service layer for SMS and WhatsApp messaging.
+Unified message service layer for SMS, WhatsApp, and Email messaging.
 
-This module provides wrapper classes for interacting with Africa's Talking API.
+This module provides wrapper classes for interacting with messaging services,
+including Africa's Talking API and mock services for demo mode.
 """
 import logging
 import africastalking
@@ -274,18 +275,33 @@ class WhatsAppService(AfricasTalkingService):
 
 # Convenience functions for easy access
 def send_sms(recipient: str, message: str, sender_id: Optional[str] = None) -> Dict:
-    """Send SMS message."""
-    service = SMSService()
-    return service.send_sms(recipient, message, sender_id)
+    """
+    Send SMS message using appropriate service (real or mock).
+    
+    Automatically selects between Africa's Talking and Mock service
+    based on SMS_DEMO_MODE setting and credential availability.
+    """
+    from .mock_sms_service import HybridSMSService
+    service = HybridSMSService()
+    return service.send_sms(recipient, message)
 
 
 def send_bulk_sms(recipients: List[str], message: str, sender_id: Optional[str] = None) -> Dict:
-    """Send bulk SMS messages."""
-    service = SMSService()
-    return service.send_bulk_sms(recipients, message, sender_id)
+    """Send bulk SMS messages using appropriate service."""
+    from .mock_sms_service import HybridSMSService
+    service = HybridSMSService()
+    return service.send_bulk_sms(recipients, message)
 
 
 def send_whatsapp(recipient: str, message: str, template_name: Optional[str] = None) -> Dict:
-    """Send WhatsApp message."""
-    service = WhatsAppService()
-    return service.send_whatsapp(recipient, message, template_name)
+    """Send WhatsApp message using appropriate service."""
+    from .mock_sms_service import HybridSMSService
+    service = HybridSMSService()
+    return service.send_whatsapp(recipient, template_name, {})
+
+
+def is_demo_mode() -> bool:
+    """Check if messaging is running in demo mode."""
+    from .mock_sms_service import HybridSMSService
+    service = HybridSMSService()
+    return service.is_demo_mode()

@@ -72,9 +72,24 @@ class PatientViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get"])
     def stats(self, request):
         """Get patient statistics."""
+        from django.utils import timezone
+        from datetime import timedelta
+        
         total = Patient.objects.count()
         active = Patient.objects.filter(is_active=True).count()
         inactive = total - active
+        
+        # Enrollment stats
+        today = timezone.now().date()
+        week_ago = today - timedelta(days=7)
+        
+        new_enrollments_today = Patient.objects.filter(
+            enrolled_date__date=today
+        ).count()
+        
+        new_enrollments_this_week = Patient.objects.filter(
+            enrolled_date__date__gte=week_ago
+        ).count()
         
         by_gender = {}
         for gender, _ in Patient.GENDER_CHOICES:
@@ -84,6 +99,8 @@ class PatientViewSet(viewsets.ModelViewSet):
             "total_patients": total,
             "active_patients": active,
             "inactive_patients": inactive,
+            "new_enrollments_today": new_enrollments_today,
+            "new_enrollments_this_week": new_enrollments_this_week,
             "by_gender": by_gender,
         })
     
