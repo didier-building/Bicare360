@@ -124,6 +124,25 @@ class Appointment(models.Model):
         help_text='Expected duration in minutes'
     )
     
+    # Cancellation tracking
+    cancellation_reason = models.TextField(
+        blank=True,
+        null=True,
+        help_text='Reason for cancellation if appointment was cancelled'
+    )
+    cancelled_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        help_text='When the appointment was cancelled'
+    )
+    cancelled_by = models.CharField(
+        max_length=50,
+        choices=[('patient', 'Patient'), ('nurse', 'Nurse'), ('system', 'System')],
+        blank=True,
+        null=True,
+        help_text='Who cancelled the appointment'
+    )
+    
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

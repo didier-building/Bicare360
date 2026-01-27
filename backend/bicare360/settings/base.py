@@ -51,6 +51,7 @@ LOCAL_APPS = [
     "apps.consents",
     "apps.messaging",
     "apps.nursing",
+    "apps.vitals",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -159,6 +160,8 @@ CORS_ALLOWED_ORIGINS = env.list(
         "http://127.0.0.1:3000",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
     ],
 )
 

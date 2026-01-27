@@ -49,7 +49,7 @@ class MessageSerializer(serializers.ModelSerializer):
 class MessageListSerializer(serializers.ModelSerializer):
     """Optimized serializer for message list views."""
 
-    patient_name = serializers.CharField(source="recipient_patient.full_name", read_only=True)
+    patient_name = serializers.SerializerMethodField()
     template_name = serializers.CharField(source="template.name", read_only=True)
 
     class Meta:
@@ -65,6 +65,12 @@ class MessageListSerializer(serializers.ModelSerializer):
             "sent_at",
             "created_at",
         ]
+    
+    def get_patient_name(self, obj):
+        """Get patient full name."""
+        if obj.recipient_patient:
+            return f"{obj.recipient_patient.first_name} {obj.recipient_patient.last_name}"
+        return None
 
 
 class MessageDetailSerializer(serializers.ModelSerializer):

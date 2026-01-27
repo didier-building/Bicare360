@@ -260,7 +260,7 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                     setEditData({ ...editData, prefers_sms: e.target.checked })
                   }
                   disabled={!isEditing}
-                  className="rounded text-primary-500 focus:ring-primary-500"
+                  className="rounded text-teal-500 focus:ring-teal-500"
                 />
                 <span className="text-sm text-gray-700">Prefers SMS</span>
               </label>
@@ -272,7 +272,7 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                     setEditData({ ...editData, prefers_whatsapp: e.target.checked })
                   }
                   disabled={!isEditing}
-                  className="rounded text-primary-500 focus:ring-primary-500"
+                  className="rounded text-teal-500 focus:ring-teal-500"
                 />
                 <span className="text-sm text-gray-700">Prefers WhatsApp</span>
               </label>
@@ -322,7 +322,7 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="px-4 py-2 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 disabled:opacity-50"
+                className="px-4 py-2 bg-teal-500 text-white rounded-lg font-medium hover:bg-teal-600 disabled:opacity-50 shadow-md hover:shadow-lg transition-all"
               >
                 {isSaving ? 'Saving...' : 'Save Changes'}
               </button>
@@ -337,7 +337,7 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
               </button>
               <button
                 onClick={() => setIsEditing(true)}
-                className="px-4 py-2 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600"
+                className="px-4 py-2 bg-teal-500 text-white rounded-lg font-medium hover:bg-teal-600 shadow-md hover:shadow-lg transition-all"
               >
                 Edit Patient
               </button>

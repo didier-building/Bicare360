@@ -19,7 +19,8 @@ MIDDLEWARE += [
 INTERNAL_IPS = ["127.0.0.1", "localhost"]
 
 # Email backend for development
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# Commented out to use .env EMAIL_BACKEND setting for real Gmail testing
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Logging
 LOGGING = {

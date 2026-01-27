@@ -15,7 +15,9 @@ from apps.appointments.serializers import (
     AppointmentCreateSerializer,
     AppointmentReminderSerializer
 )
-from apps.core.permissions import IsAuthenticatedUser
+from apps.core.permissions import IsAuthenticatedUser, IsPatient
+from apps.messaging.email_service import EmailService
+from apps.patients.models import Patient
 
 
 class AppointmentViewSet(viewsets.ModelViewSet):
@@ -23,13 +25,41 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     ViewSet for managing appointments.
     Provides CRUD operations and custom actions.
     """
-    queryset = Appointment.objects.all()
+    queryset = Appointment.objects.select_related('patient', 'hospital').all()
     permission_classes = [IsAuthenticatedUser]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['status', 'appointment_type', 'patient', 'hospital', 'location_type']
     search_fields = ['patient__first_name', 'patient__last_name', 'provider_name', 'reason']
     ordering_fields = ['appointment_datetime', 'created_at']
     ordering = ['appointment_datetime']
+    
+    def get_queryset(self):
+        """
+        Filter appointments based on user type.
+        - Patients: Only see their own appointments
+        - Providers/Admins: Can see all appointments or filter by patient_id
+        """
+        queryset = Appointment.objects.select_related('patient', 'hospital').all()
+        
+        # If user is a patient, filter to only their appointments
+        if hasattr(self.request.user, 'patient'):
+            patient = self.request.user.patient
+            queryset = queryset.filter(patient=patient)
+            print(f'🔐 [APPOINTMENT FILTER] Patient {patient.id} - {patient.full_name}')
+            print(f'   Filtered to {queryset.count()} appointments')
+        else:
+            # For providers/admins, allow filtering by patient_id parameter
+            patient_id = self.request.query_params.get('patient_id', None)
+            if patient_id:
+                try:
+                    patient = Patient.objects.get(id=patient_id)
+                    queryset = queryset.filter(patient=patient)
+                    print(f'🔐 [APPOINTMENT FILTER] Provider/Admin filtering by patient {patient_id}')
+                    print(f'   Filtered to {queryset.count()} appointments')
+                except Patient.DoesNotExist:
+                    print(f'⚠️ [APPOINTMENT FILTER] Patient {patient_id} not found')
+        
+        return queryset
     
     def get_serializer_class(self):
         """Return appropriate serializer class based on action."""
@@ -40,6 +70,62 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         elif self.action == 'retrieve':
             return AppointmentDetailSerializer
         return AppointmentSerializer
+    
+    def perform_create(self, serializer):
+        """Create appointment and send confirmation email to patient."""
+        appointment = serializer.save()
+        
+        # Send appointment confirmation email to patient
+        print(f'\n🔵 [APPOINTMENT CREATE] ID: {appointment.id}')
+        print(f'   Patient: {appointment.patient.full_name}')
+        print(f'   Email: {appointment.patient.email}')
+        
+        if appointment.patient and appointment.patient.email:
+            email_service = EmailService()
+            try:
+                print(f'   📧 Sending appointment email...')
+                result = email_service.send_appointment_reminder_email(
+                    patient_email=appointment.patient.email,
+                    patient_name=appointment.patient.full_name,
+                    appointment_date=appointment.appointment_datetime.strftime('%B %d, %Y'),
+                    appointment_time=appointment.appointment_datetime.strftime('%I:%M %p'),
+                    hospital_name=appointment.hospital.name,
+                    provider_name=appointment.provider_name or 'Healthcare Provider',
+                    appointment_type=appointment.get_appointment_type_display()
+                )
+                print(f'   ✅ Email sent: {result["recipient"]}')
+            except Exception as e:
+                print(f'   ❌ Failed to send email: {str(e)}')
+        else:
+            print(f'   ⚠️ No email address for patient')
+    
+    def perform_update(self, serializer):
+        """Update appointment and send updated notification to patient."""
+        appointment = serializer.save()
+        
+        # Send updated appointment notification to patient
+        print(f'\n🔵 [APPOINTMENT UPDATE] ID: {appointment.id}')
+        print(f'   Patient: {appointment.patient.full_name}')
+        print(f'   Email: {appointment.patient.email}')
+        
+        if appointment.patient and appointment.patient.email:
+            email_service = EmailService()
+            try:
+                print(f'   📧 Sending updated appointment email...')
+                result = email_service.send_appointment_reminder_email(
+                    patient_email=appointment.patient.email,
+                    patient_name=appointment.patient.full_name,
+                    appointment_date=appointment.appointment_datetime.strftime('%B %d, %Y'),
+                    appointment_time=appointment.appointment_datetime.strftime('%I:%M %p'),
+                    hospital_name=appointment.hospital.name,
+                    provider_name=appointment.provider_name or 'Healthcare Provider',
+                    appointment_type=appointment.get_appointment_type_display()
+                )
+                print(f'   ✅ Email sent: {result["recipient"]}')
+            except Exception as e:
+                print(f'   ❌ Failed to send email: {str(e)}')
+        else:
+            print(f'   ⚠️ No email address for patient')
     
     @action(detail=False, methods=['get'])
     def upcoming(self, request):
@@ -64,7 +150,8 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         appointment.status = 'confirmed'
         appointment.save()
         
-        serializer = self.get_serializer(appointment)
+        # Use AppointmentListSerializer to include patient_name
+        serializer = AppointmentListSerializer(appointment)
         return Response(serializer.data)
     
     @action(detail=True, methods=['post'])
@@ -74,7 +161,8 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         appointment.status = 'cancelled'
         appointment.save()
         
-        serializer = self.get_serializer(appointment)
+        # Use AppointmentListSerializer to include patient_name
+        serializer = AppointmentListSerializer(appointment)
         return Response(serializer.data)
     
     @action(detail=True, methods=['post'])
@@ -84,7 +172,8 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         appointment.status = 'completed'
         appointment.save()
         
-        serializer = self.get_serializer(appointment)
+        # Use AppointmentListSerializer to include patient_name
+        serializer = AppointmentListSerializer(appointment)
         return Response(serializer.data)
 
 

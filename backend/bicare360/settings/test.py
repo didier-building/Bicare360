@@ -33,3 +33,8 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # Celery eager mode for synchronous task execution in tests
 CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True
+
+# Disable pagination in tests for easier testing
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": None,
+}

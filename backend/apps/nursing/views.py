@@ -13,11 +13,13 @@ from .models import NurseProfile, PatientAlert, NursePatientAssignment, AlertLog
 from .serializers import (
     NurseProfileSerializer,
     PatientAlertSerializer,
+    PatientAlertListSerializer,
     PatientAlertCreateSerializer,
     NursePatientAssignmentSerializer,
     AlertLogSerializer
 )
 from apps.patients.models import Patient
+from apps.core.permissions import IsNurseOrAdmin
 
 
 class NurseProfileViewSet(viewsets.ModelViewSet):
@@ -78,15 +80,35 @@ class PatientAlertViewSet(viewsets.ModelViewSet):
     queryset = PatientAlert.objects.all().select_related(
         'patient', 'assigned_nurse__user', 'discharge_summary', 'appointment'
     )
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsNurseOrAdmin]
     
     def get_serializer_class(self):
         if self.action == 'create':
             return PatientAlertCreateSerializer
+        elif self.action == 'list':
+            return PatientAlertListSerializer
         return PatientAlertSerializer
     
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = PatientAlert.objects.all().select_related(
+            'patient', 'assigned_nurse__user', 'discharge_summary', 'appointment'
+        )
+        
+        # If user is a patient, filter to only their alerts
+        if hasattr(self.request.user, 'patient'):
+            patient = self.request.user.patient
+            queryset = queryset.filter(patient=patient)
+            print(f'🔐 [PATIENT ALERT FILTER] Patient {patient.id} - {patient.full_name}')
+        else:
+            # For nurses/admins, allow filtering by patient_id parameter
+            patient_id = self.request.query_params.get('patient_id')
+            if patient_id:
+                try:
+                    from apps.patients.models import Patient
+                    patient = Patient.objects.get(id=patient_id)
+                    queryset = queryset.filter(patient=patient)
+                except Patient.DoesNotExist:
+                    pass
         
         # Filter by status
         status_filter = self.request.query_params.get('status')
@@ -128,11 +150,18 @@ class PatientAlertViewSet(viewsets.ModelViewSet):
             notes=f"Alert created: {alert.title}"
         )
     
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['patch'])
     def assign(self, request, pk=None):
         """Assign alert to a nurse."""
         alert = self.get_object()
         nurse_id = request.data.get('nurse_id')
+        
+        # Cannot assign resolved alerts
+        if alert.status == 'resolved':
+            return Response(
+                {'error': 'Cannot assign an already resolved alert'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         if not nurse_id:
             return Response(
@@ -191,11 +220,25 @@ class PatientAlertViewSet(viewsets.ModelViewSet):
         
         return Response(PatientAlertSerializer(alert).data)
     
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['patch'])
     def resolve(self, request, pk=None):
         """Resolve an alert."""
         alert = self.get_object()
         resolution_notes = request.data.get('resolution_notes', '')
+        
+        # Validate that resolution_notes is provided
+        if not resolution_notes or resolution_notes.strip() == '':
+            return Response(
+                {'error': 'resolution_notes is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Cannot resolve already resolved alerts
+        if alert.status == 'resolved':
+            return Response(
+                {'error': 'Cannot resolve an already resolved alert'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         alert.status = 'resolved'
         alert.resolved_at = timezone.now()
@@ -211,11 +254,25 @@ class PatientAlertViewSet(viewsets.ModelViewSet):
         
         return Response(PatientAlertSerializer(alert).data)
     
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['patch'])
     def escalate(self, request, pk=None):
         """Escalate an alert to higher severity."""
         alert = self.get_object()
-        reason = request.data.get('reason', '')
+        escalation_reason = request.data.get('escalation_reason', '')
+        
+        # Validate that escalation_reason is provided
+        if not escalation_reason or escalation_reason.strip() == '':
+            return Response(
+                {'error': 'escalation_reason is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Cannot escalate already resolved alerts
+        if alert.status == 'resolved':
+            return Response(
+                {'error': 'Cannot escalate an already resolved alert'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         # Increase severity
         severity_levels = ['low', 'medium', 'high', 'critical']
@@ -223,7 +280,7 @@ class PatientAlertViewSet(viewsets.ModelViewSet):
         if current_index < len(severity_levels) - 1:
             alert.severity = severity_levels[current_index + 1]
             alert.status = 'escalated'
-            alert.escalation_reason = reason
+            alert.escalation_reason = escalation_reason
             
             # Update SLA deadline based on new severity
             sla_minutes = {
@@ -241,7 +298,7 @@ class PatientAlertViewSet(viewsets.ModelViewSet):
                 alert=alert,
                 action='escalated',
                 performed_by=request.user,
-                notes=reason or f'Escalated to {alert.severity}'
+                notes=escalation_reason or f'Escalated to {alert.severity}'
             )
             
             return Response(PatientAlertSerializer(alert).data)
@@ -332,6 +389,51 @@ class PatientAlertViewSet(viewsets.ModelViewSet):
         ).order_by('sla_deadline', '-severity')
         
         serializer = self.get_serializer(alerts, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """Get placeholder for stats - not a valid endpoint by itself"""
+        return Response(
+            {'error': 'Use /stats/overview/ or /stats/by-severity/'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    @action(detail=False, methods=['get'], url_path='stats/overview')
+    def stats_overview(self, request):
+        """Get alert dashboard statistics overview."""
+        now = timezone.now()
+        
+        # Count alerts by status
+        stats = {
+            'total_alerts': self.queryset.count(),
+            'new_count': self.queryset.filter(status='new').count(),
+            'assigned_count': self.queryset.filter(status='assigned').count(),
+            'in_progress_count': self.queryset.filter(status='in_progress').count(),
+            'resolved_count': self.queryset.filter(status='resolved').count(),
+            'escalated_count': self.queryset.filter(status='escalated').count(),
+            'closed_count': self.queryset.filter(status='closed').count(),
+            'overdue_count': self.queryset.filter(
+                status__in=['new', 'assigned', 'in_progress'],
+                sla_deadline__lt=now
+            ).count(),
+        }
+        return Response(stats)
+    
+    @action(detail=False, methods=['get'], url_path='stats/by-severity')
+    def stats_by_severity(self, request):
+        """Get alert statistics grouped by severity."""
+        stats = {}
+        for severity, _ in PatientAlert.SEVERITY_CHOICES:
+            stats[severity] = self.queryset.filter(severity=severity).count()
+        return Response(stats)
+    
+    @action(detail=True, methods=['get'])
+    def history(self, request, pk=None):
+        """Get audit history for an alert."""
+        alert = self.get_object()
+        logs = alert.logs.all().order_by('-timestamp')
+        serializer = AlertLogSerializer(logs, many=True)
         return Response(serializer.data)
 
 

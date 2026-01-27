@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../stores/authStore';
+import { useTheme } from '../contexts/ThemeContext';
 import { usersAPI } from '../api/users';
 import type { UserPreferences } from '../api/users';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -7,9 +8,16 @@ import toast from 'react-hot-toast';
 
 const SettingsPage: React.FC = () => {
   const { user } = useAuthStore();
+  const { theme, setTheme } = useTheme();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'preferences'>('profile');
+  const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>(theme);
+
+  // Update local theme state when context theme changes
+  useEffect(() => {
+    setCurrentTheme(theme);
+  }, [theme]);
 
   // Profile state
   const [profileForm, setProfileForm] = useState({
@@ -61,12 +69,21 @@ const SettingsPage: React.FC = () => {
   const handleProfileSave = async () => {
     setIsSaving(true);
     try {
-      // For now, just update local state since backend endpoint might not exist
+      await usersAPI.updateProfile({
+        first_name: profileForm.first_name,
+        last_name: profileForm.last_name,
+        email: profileForm.email,
+      });
       toast.success('Profile updated successfully');
-      // In a real app, you would call: await usersAPI.updateProfile(profileForm);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to update profile:', error);
-      toast.error('Failed to update profile');
+      let errorMessage = 'Failed to update profile';
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as Record<string, unknown>;
+        const data = (axiosError.response as Record<string, unknown>)?.data as Record<string, unknown>;
+        errorMessage = (data?.error as string) || errorMessage;
+      }
+      toast.error(errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -107,15 +124,11 @@ const SettingsPage: React.FC = () => {
     } catch (error: unknown) {
       console.error('Failed to change password:', error);
       let errorMessage = 'Failed to change password';
-      
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (error && typeof error === 'object' && 'response' in error) {
+      if (error && typeof error === 'object' && 'response' in error) {
         const axiosError = error as Record<string, unknown>;
-        const response = axiosError.response as Record<string, unknown>;
-        errorMessage = (response?.data as Record<string, unknown>)?.detail as string || 'Failed to change password';
+        const data = (axiosError.response as Record<string, unknown>)?.data as Record<string, unknown>;
+        errorMessage = (data?.error as string) || errorMessage;
       }
-      
       setPasswordError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -125,10 +138,23 @@ const SettingsPage: React.FC = () => {
 
   // Handle preferences update
   const handlePreferenceChange = async (key: keyof UserPreferences, value: string | boolean) => {
-    if (!preferences) return;
+    console.log('handlePreferenceChange called:', { key, value });
+    if (!preferences) {
+      console.log('No preferences loaded, skipping');
+      return;
+    }
 
     const updated = { ...preferences, [key]: value };
     setPreferences(updated);
+
+    // Update theme if theme preference changed
+    if (key === 'theme') {
+      console.log('Theme changed, calling setTheme with:', value);
+      const newTheme = value as 'light' | 'dark';
+      setTheme(newTheme);
+      setCurrentTheme(newTheme);
+      console.log('setTheme called, new theme:', newTheme);
+    }
 
     try {
       await usersAPI.savePreferences(updated);
@@ -151,19 +177,19 @@ const SettingsPage: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-600 mt-2">Manage your account and preferences</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">Manage your account and preferences</p>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 dark:border-gray-700">
         <div className="flex gap-8">
           <button
             onClick={() => setActiveTab('profile')}
             className={`pb-4 px-1 font-medium text-sm border-b-2 transition-colors ${
               activeTab === 'profile'
-                ? 'text-primary-600 border-primary-600'
-                : 'text-gray-600 border-transparent hover:text-gray-900'
+                ? 'text-teal-600 border-teal-600'
+                : 'text-gray-600 dark:text-gray-400 border-transparent hover:text-gray-900 dark:hover:text-gray-200'
             }`}
           >
             Profile
@@ -172,8 +198,8 @@ const SettingsPage: React.FC = () => {
             onClick={() => setActiveTab('password')}
             className={`pb-4 px-1 font-medium text-sm border-b-2 transition-colors ${
               activeTab === 'password'
-                ? 'text-primary-600 border-primary-600'
-                : 'text-gray-600 border-transparent hover:text-gray-900'
+                ? 'text-teal-600 border-teal-600'
+                : 'text-gray-600 dark:text-gray-400 border-transparent hover:text-gray-900 dark:hover:text-gray-200'
             }`}
           >
             Change Password
@@ -182,8 +208,8 @@ const SettingsPage: React.FC = () => {
             onClick={() => setActiveTab('preferences')}
             className={`pb-4 px-1 font-medium text-sm border-b-2 transition-colors ${
               activeTab === 'preferences'
-                ? 'text-primary-600 border-primary-600'
-                : 'text-gray-600 border-transparent hover:text-gray-900'
+                ? 'text-teal-600 border-teal-600'
+                : 'text-gray-600 dark:text-gray-400 border-transparent hover:text-gray-900 dark:hover:text-gray-200'
             }`}
           >
             Preferences
@@ -193,72 +219,72 @@ const SettingsPage: React.FC = () => {
 
       {/* Profile Tab */}
       {activeTab === 'profile' && (
-        <div className="bg-white rounded-lg shadow p-6 max-w-2xl">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Profile Settings</h2>
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow p-6 max-w-2xl">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Profile Settings</h2>
           
           <div className="space-y-4">
             {/* Username (read-only) */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
               <input
                 type="text"
                 value={user?.username || ''}
                 disabled
-                className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-600 cursor-not-allowed"
+                className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 cursor-not-allowed"
               />
             </div>
 
             {/* First Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name</label>
               <input
                 type="text"
                 value={profileForm.first_name}
                 onChange={(e) =>
                   setProfileForm({ ...profileForm, first_name: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
             </div>
 
             {/* Last Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name</label>
               <input
                 type="text"
                 value={profileForm.last_name}
                 onChange={(e) =>
                   setProfileForm({ ...profileForm, last_name: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
             </div>
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
               <input
                 type="email"
                 value={profileForm.email}
                 onChange={(e) =>
                   setProfileForm({ ...profileForm, email: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
             </div>
 
             {/* Account Status */}
             <div className="pt-4">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Account Status:{' '}
-                <span className="font-semibold text-green-600">
+                <span className="font-semibold text-green-600 dark:text-green-400">
                   Active
                 </span>
               </p>
               {user?.date_joined && (
-                <p className="text-sm text-gray-600 mt-2">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                   Created On:{' '}
-                  <span className="font-semibold">
+                  <span className="font-semibold dark:text-gray-300">
                     {new Date(user.date_joined).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
@@ -276,7 +302,7 @@ const SettingsPage: React.FC = () => {
               <button
                 onClick={handleProfileSave}
                 disabled={isSaving}
-                className="px-6 py-2 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 disabled:opacity-50"
+                className="px-6 py-2 bg-teal-500 text-white rounded-lg font-medium hover:bg-teal-600 disabled:opacity-50 shadow-md hover:shadow-lg"
               >
                 {isSaving ? 'Saving...' : 'Save Changes'}
               </button>
@@ -287,11 +313,11 @@ const SettingsPage: React.FC = () => {
 
       {/* Password Tab */}
       {activeTab === 'password' && (
-        <div className="bg-white rounded-lg shadow p-6 max-w-2xl">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Change Password</h2>
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow p-6 max-w-2xl">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Change Password</h2>
 
           {passwordError && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-lg text-red-700 text-sm">
+            <div className="mb-4 p-3 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-lg text-red-700 dark:text-red-200 text-sm">
               {passwordError}
             </div>
           )}
@@ -299,7 +325,7 @@ const SettingsPage: React.FC = () => {
           <div className="space-y-4">
             {/* Current Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Current Password
               </label>
               <input
@@ -308,13 +334,13 @@ const SettingsPage: React.FC = () => {
                 onChange={(e) =>
                   setPasswordForm({ ...passwordForm, old_password: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
             </div>
 
             {/* New Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 New Password
               </label>
               <input
@@ -324,13 +350,13 @@ const SettingsPage: React.FC = () => {
                   setPasswordForm({ ...passwordForm, new_password: e.target.value })
                 }
                 placeholder="At least 8 characters"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
             </div>
 
             {/* Confirm New Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Confirm New Password
               </label>
               <input
@@ -342,7 +368,7 @@ const SettingsPage: React.FC = () => {
                     new_password_confirm: e.target.value,
                   })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
             </div>
 
@@ -351,7 +377,7 @@ const SettingsPage: React.FC = () => {
               <button
                 onClick={handlePasswordChange}
                 disabled={isSaving}
-                className="px-6 py-2 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 disabled:opacity-50"
+                className="px-6 py-2 bg-teal-500 text-white rounded-lg font-medium hover:bg-teal-600 disabled:opacity-50 shadow-md hover:shadow-lg"
               >
                 {isSaving ? 'Changing...' : 'Change Password'}
               </button>
@@ -362,46 +388,48 @@ const SettingsPage: React.FC = () => {
 
       {/* Preferences Tab */}
       {activeTab === 'preferences' && preferences && (
-        <div className="bg-white rounded-lg shadow p-6 max-w-2xl">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Preferences</h2>
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow p-6 max-w-2xl">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Preferences</h2>
 
           <div className="space-y-6">
             {/* Theme */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">Theme</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Theme</label>
               <div className="flex gap-4">
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="radio"
                     name="theme"
                     value="light"
-                    checked={preferences.theme === 'light'}
-                    onChange={(e) =>
-                      handlePreferenceChange('theme', e.target.value as 'light' | 'dark')
-                    }
-                    className="text-primary-500 focus:ring-primary-500"
+                    checked={currentTheme === 'light'}
+                    onChange={(e) => {
+                      console.log('Light mode radio clicked, value:', e.target.value);
+                      handlePreferenceChange('theme', e.target.value);
+                    }}
+                    className="text-teal-500 focus:ring-teal-500"
                   />
-                  <span className="text-gray-700">Light Mode</span>
+                  <span className="text-gray-700 dark:text-gray-300">Light Mode</span>
                 </label>
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="radio"
                     name="theme"
                     value="dark"
-                    checked={preferences.theme === 'dark'}
-                    onChange={(e) =>
-                      handlePreferenceChange('theme', e.target.value as 'light' | 'dark')
-                    }
-                    className="text-primary-500 focus:ring-primary-500"
+                    checked={currentTheme === 'dark'}
+                    onChange={(e) => {
+                      console.log('Dark mode radio clicked, value:', e.target.value);
+                      handlePreferenceChange('theme', e.target.value);
+                    }}
+                    className="text-teal-500 focus:ring-teal-500"
                   />
-                  <span className="text-gray-700">Dark Mode</span>
+                  <span className="text-gray-700 dark:text-gray-300">Dark Mode</span>
                 </label>
               </div>
             </div>
 
             {/* Language */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">Language</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Language</label>
               <select
                 value={preferences.language}
                 onChange={(e) =>
@@ -410,7 +438,7 @@ const SettingsPage: React.FC = () => {
                     e.target.value as 'en' | 'kin' | 'fra'
                   )
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               >
                 <option value="en">English</option>
                 <option value="kin">Kinyarwanda</option>
@@ -419,8 +447,8 @@ const SettingsPage: React.FC = () => {
             </div>
 
             {/* Notifications */}
-            <div className="border-t border-gray-200 pt-6">
-              <h3 className="text-sm font-medium text-gray-900 mb-4">Notifications</h3>
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Notifications</h3>
 
               <div className="space-y-4">
                 <label className="flex items-center gap-3 cursor-pointer">
@@ -430,9 +458,9 @@ const SettingsPage: React.FC = () => {
                     onChange={(e) =>
                       handlePreferenceChange('notifications_enabled', e.target.checked)
                     }
-                    className="rounded text-primary-500 focus:ring-primary-500"
+                    className="rounded text-teal-500 focus:ring-teal-500"
                   />
-                  <span className="text-gray-700">Enable all notifications</span>
+                  <span className="text-gray-700 dark:text-gray-300">Enable all notifications</span>
                 </label>
 
                 <label className="flex items-center gap-3 cursor-pointer ml-6">
@@ -443,9 +471,9 @@ const SettingsPage: React.FC = () => {
                       handlePreferenceChange('email_alerts', e.target.checked)
                     }
                     disabled={!preferences.notifications_enabled}
-                    className="rounded text-primary-500 focus:ring-primary-500 disabled:opacity-50"
+                    className="rounded text-teal-500 focus:ring-teal-500 disabled:opacity-50"
                   />
-                  <span className="text-gray-700">Email alerts</span>
+                  <span className="text-gray-700 dark:text-gray-300">Email alerts</span>
                 </label>
 
                 <label className="flex items-center gap-3 cursor-pointer ml-6">
@@ -456,9 +484,9 @@ const SettingsPage: React.FC = () => {
                       handlePreferenceChange('sms_alerts', e.target.checked)
                     }
                     disabled={!preferences.notifications_enabled}
-                    className="rounded text-primary-500 focus:ring-primary-500 disabled:opacity-50"
+                    className="rounded text-teal-500 focus:ring-teal-500 disabled:opacity-50"
                   />
-                  <span className="text-gray-700">SMS alerts</span>
+                  <span className="text-gray-700 dark:text-gray-300">SMS alerts</span>
                 </label>
               </div>
             </div>

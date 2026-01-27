@@ -251,3 +251,56 @@ class TestEmergencyContactModel:
         assert "Jane Doe" in contact_str
         assert "spouse" in contact_str
         assert "John Doe" in contact_str
+
+
+@pytest.mark.django_db
+class TestPatientUserRelationship:
+    """Test suite for Patient-User relationship (portal access)."""
+
+    def test_patient_can_be_linked_to_user(self):
+        """Test that a patient can be linked to a Django User account."""
+        user = UserFactory(username="patient123")
+        patient = PatientFactory(user=user)
+
+        assert patient.user is not None
+        assert patient.user.username == "patient123"
+        assert hasattr(user, 'patient')
+        assert user.patient == patient
+
+    def test_patient_can_exist_without_user(self):
+        """Test that a patient can exist without a linked user account."""
+        patient = PatientFactory(user=None)
+
+        assert patient.user is None
+        assert patient.id is not None
+
+    def test_user_patient_relationship_is_one_to_one(self):
+        """Test that one user can only be linked to one patient."""
+        user = UserFactory()
+        patient1 = PatientFactory(user=user)
+
+        # Attempting to create another patient with same user should fail
+        with pytest.raises(IntegrityError):
+            PatientFactory(user=user)
+
+    def test_deleting_user_deletes_patient(self):
+        """Test CASCADE deletion: deleting user deletes linked patient."""
+        user = UserFactory()
+        patient = PatientFactory(user=user)
+        patient_id = patient.id
+
+        user.delete()
+
+        assert not Patient.objects.filter(id=patient_id).exists()
+
+    def test_patient_without_user_can_be_assigned_user_later(self):
+        """Test that a patient created without user can be linked later."""
+        patient = PatientFactory(user=None)
+        user = UserFactory()
+
+        patient.user = user
+        patient.save()
+
+        patient.refresh_from_db()
+        assert patient.user == user
+        assert user.patient == patient

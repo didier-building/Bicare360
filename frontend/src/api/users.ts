@@ -6,8 +6,7 @@ export interface UserProfile {
   email: string;
   first_name: string;
   last_name: string;
-  is_active: boolean;
-  date_joined: string;
+  date_joined?: string;
 }
 
 export interface PasswordChangeRequest {
@@ -24,15 +23,13 @@ export interface UserPreferences {
   sms_alerts: boolean;
 }
 
-const BASE_URL = '/api';
-
 export const usersAPI = {
   /**
-   * Get current user profile
+   * Get current user profile from backend
    */
   getProfile: async (): Promise<UserProfile> => {
     try {
-      const response = await client.get<UserProfile>(`${BASE_URL}/auth/user/`);
+      const response = await client.get<UserProfile>('/v1/users/profile/');
       return response.data;
     } catch (error) {
       console.error('Failed to fetch user profile:', error);
@@ -45,7 +42,7 @@ export const usersAPI = {
    */
   updateProfile: async (data: Partial<UserProfile>): Promise<UserProfile> => {
     try {
-      const response = await client.patch<UserProfile>(`${BASE_URL}/auth/user/`, data);
+      const response = await client.put<UserProfile>('/v1/users/update_profile/', data);
       return response.data;
     } catch (error) {
       console.error('Failed to update user profile:', error);
@@ -56,10 +53,10 @@ export const usersAPI = {
   /**
    * Change password
    */
-  changePassword: async (data: PasswordChangeRequest): Promise<{ detail: string }> => {
+  changePassword: async (data: PasswordChangeRequest): Promise<{ message: string }> => {
     try {
-      const response = await client.post<{ detail: string }>(
-        `${BASE_URL}/auth/change-password/`,
+      const response = await client.post<{ message: string }>(
+        '/v1/users/change_password/',
         data
       );
       return response.data;

@@ -376,3 +376,166 @@ class MedicationAdherence(models.Model):
         )
         delta = self.taken_at - scheduled_datetime
         return int(delta.total_seconds() / 60)
+
+
+class PatientMedicationTracker(models.Model):
+    """Track patient medication adherence with daily check-ins."""
+    
+    ADHERENCE_STATUS_CHOICES = [
+        ('taken', 'Taken'),
+        ('missed', 'Missed'),
+        ('delayed', 'Delayed'),
+        ('not_reported', 'Not Reported'),
+    ]
+    
+    patient = models.ForeignKey(
+        'patients.Patient',
+        on_delete=models.CASCADE,
+        related_name='medication_tracking'
+    )
+    prescription = models.ForeignKey(
+        'medications.Prescription', 
+        on_delete=models.CASCADE,
+        related_name='tracking_records'
+    )
+    
+    # Tracking fields
+    date = models.DateField(default=timezone.now)
+    status = models.CharField(
+        max_length=20, 
+        choices=ADHERENCE_STATUS_CHOICES,
+        default='not_reported'
+    )
+    taken_time = models.TimeField(null=True, blank=True)
+    notes = models.TextField(blank=True, null=True)
+    
+    # Timestamps
+    reported_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['patient', 'prescription', 'date']
+        ordering = ['-date']
+        indexes = [
+            models.Index(fields=['patient', 'date']),
+            models.Index(fields=['prescription', 'date']),
+        ]
+    
+    def __str__(self):
+        return f"{self.patient.full_name} - {self.prescription.medication.name} - {self.date} - {self.status}"
+
+
+class SymptomReport(models.Model):
+    """Patient-reported symptoms and side effects."""
+    
+    SEVERITY_CHOICES = [
+        ('mild', 'Mild'),
+        ('moderate', 'Moderate'),
+        ('severe', 'Severe'),
+        ('critical', 'Critical'),
+    ]
+    
+    SYMPTOM_TYPE_CHOICES = [
+        ('side_effect', 'Medication Side Effect'),
+        ('symptom', 'General Symptom'),
+        ('pain', 'Pain'),
+        ('fatigue', 'Fatigue'),
+        ('nausea', 'Nausea'),
+        ('dizziness', 'Dizziness'),
+        ('other', 'Other'),
+    ]
+    
+    patient = models.ForeignKey(
+        'patients.Patient',
+        on_delete=models.CASCADE,
+        related_name='symptom_reports'
+    )
+    related_prescription = models.ForeignKey(
+        'medications.Prescription',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='symptom_reports'
+    )
+    
+    # Symptom details
+    symptom_type = models.CharField(max_length=20, choices=SYMPTOM_TYPE_CHOICES)
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    severity = models.CharField(max_length=20, choices=SEVERITY_CHOICES)
+    
+    # Optional fields
+    duration = models.CharField(max_length=100, blank=True, null=True)
+    trigger = models.CharField(max_length=200, blank=True, null=True)
+    
+    # Status tracking
+    reviewed_by_nurse = models.BooleanField(default=False)
+    nurse_response = models.TextField(blank=True, null=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    
+    # Timestamps
+    reported_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-reported_at']
+        indexes = [
+            models.Index(fields=['patient', 'reported_at']),
+            models.Index(fields=['symptom_type']),
+        ]
+    
+    def __str__(self):
+        return f"{self.patient.full_name} - {self.title} - {self.severity}"
+
+
+class PrescriptionRefillRequest(models.Model):
+    """Patient requests for medication refills."""
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending Review'),
+        ('approved', 'Approved'),
+        ('denied', 'Denied'),
+        ('completed', 'Completed'),
+    ]
+    
+    patient = models.ForeignKey(
+        'patients.Patient',
+        on_delete=models.CASCADE,
+        related_name='refill_requests'
+    )
+    prescription = models.ForeignKey(
+        'medications.Prescription',
+        on_delete=models.CASCADE,
+        related_name='refill_requests'
+    )
+    
+    # Request details
+    quantity_requested = models.PositiveIntegerField()
+    reason = models.TextField(blank=True, null=True)
+    urgent = models.BooleanField(default=False)
+    
+    # Status tracking
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    reviewed_by = models.ForeignKey(
+        'auth.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_refill_requests'
+    )
+    review_notes = models.TextField(blank=True, null=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    
+    # Timestamps
+    requested_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-requested_at']
+        indexes = [
+            models.Index(fields=['patient', 'status']),
+            models.Index(fields=['prescription', 'requested_at']),
+        ]
+    
+    def __str__(self):
+        return f"Refill: {self.patient.full_name} - {self.prescription.name} - {self.status}"

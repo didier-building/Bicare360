@@ -107,7 +107,7 @@ const AlertsPage: React.FC = () => {
         <p className="text-red-600">Failed to load alerts. Please try again.</p>
         <button
           onClick={() => refetch()}
-          className="mt-4 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
+          className="mt-4 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 shadow-md hover:shadow-lg"
         >
           Retry
         </button>
@@ -118,12 +118,12 @@ const AlertsPage: React.FC = () => {
   return (
     <div>
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">Alerts</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Alerts</h1>
         <div className="flex flex-wrap gap-3">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
           >
             <option value="">All Statuses</option>
             <option value="new">New</option>
@@ -135,7 +135,7 @@ const AlertsPage: React.FC = () => {
           <select
             value={severityFilter}
             onChange={(e) => setSeverityFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
           >
             <option value="">All Severities</option>
             <option value="critical">Critical</option>
@@ -144,12 +144,12 @@ const AlertsPage: React.FC = () => {
             <option value="low">Low</option>
           </select>
 
-          <label className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-sm cursor-pointer hover:bg-gray-50">
+          <label className="flex items-center gap-2 px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
             <input
               type="checkbox"
               checked={assignedToMe}
               onChange={(e) => setAssignedToMe(e.target.checked)}
-              className="rounded text-primary-500 focus:ring-primary-500"
+              className="rounded text-teal-500 focus:ring-teal-500"
             />
             <span>My Alerts</span>
           </label>

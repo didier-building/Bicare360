@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dark Mode Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: white;
+            color: black;
+        }
+        html.dark body {
+            background: #1f2937;
+            color: #f3f4f6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px 0;
+            cursor: pointer;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background: #e0e0e0;
+        }
+        html.dark .status {
+            background: #374151;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dark Mode Test</h1>
+        <p>This page tests the theme switching functionality.</p>
+
+        <button onclick="toggleTheme()">Toggle Theme</button>
+        <button onclick="setLightMode()">Set Light Mode</button>
+        <button onclick="setDarkMode()">Set Dark Mode</button>
+        <button onclick="clearTheme()">Clear Theme (Use System Preference)</button>
+
+        <div id="status" class="status">
+            <p><strong>Current Theme:</strong> <span id="currentTheme">Loading...</span></p>
+            <p><strong>HTML has 'dark' class:</strong> <span id="hasDarkClass">Checking...</span></p>
+            <p><strong>localStorage 'theme':</strong> <span id="storedTheme">Checking...</span></p>
+            <p><strong>System prefers dark:</strong> <span id="systemPreference">Checking...</span></p>
+        </div>
+
+        <h2>Instructions:</h2>
+        <ol>
+            <li>Open the browser DevTools (F12)</li>
+            <li>Go to Console tab</li>
+            <li>You should see theme initialization messages</li>
+            <li>Click the buttons above to test theme switching</li>
+            <li>Watch the status update in real-time</li>
+            <li>Refresh the page to verify theme persists</li>
+        </ol>
+    </div>
+
+    <script>
+        function updateStatus() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const stored = localStorage.getItem('theme');
+            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            document.getElementById('currentTheme').textContent = isDark ? 'Dark' : 'Light';
+            document.getElementById('hasDarkClass').textContent = isDark ? 'Yes ✓' : 'No';
+            document.getElementById('storedTheme').textContent = stored || 'None (using system preference)';
+            document.getElementById('systemPreference').textContent = systemDark ? 'Yes' : 'No';
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const newTheme = isDark ? 'light' : 'dark';
+            applyTheme(newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        function setLightMode() {
+            applyTheme('light');
+            localStorage.setItem('theme', 'light');
+        }
+
+        function setDarkMode() {
+            applyTheme('dark');
+            localStorage.setItem('theme', 'dark');
+        }
+
+        function clearTheme() {
+            localStorage.removeItem('theme');
+            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            applyTheme(systemDark ? 'dark' : 'light');
+        }
+
+        function applyTheme(theme) {
+            console.log('Applying theme:', theme);
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            updateStatus();
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            console.log('Page loaded, checking theme...');
+            const stored = localStorage.getItem('theme');
+            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const initialTheme = stored || (systemDark ? 'dark' : 'light');
+            console.log('Initial theme:', initialTheme);
+            applyTheme(initialTheme);
+        });
+
+        // Update status periodically (for debugging)
+        setInterval(updateStatus, 500);
+    </script>
+</body>
+</html>

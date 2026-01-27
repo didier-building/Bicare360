@@ -40,7 +40,7 @@ const AnalyticsDashboard: React.FC = () => {
         <p className="text-red-500 text-sm mb-4">{error instanceof Error ? error.message : 'Unknown error'}</p>
         <button
           onClick={() => refetch()}
-          className="mt-4 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
+          className="mt-4 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 shadow-md hover:shadow-lg"
         >
           Retry
         </button>
@@ -88,18 +88,18 @@ const AnalyticsDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">Analytics Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
             Real-time system metrics and performance indicators
           </p>
         </div>
         <div className="flex gap-3 items-center">
-          <label className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+          <label className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
             <input
               type="checkbox"
               checked={autoRefresh}
               onChange={(e) => setAutoRefresh(e.target.checked)}
-              className="rounded text-primary-500 focus:ring-primary-500"
+              className="rounded text-teal-500 focus:ring-teal-500"
             />
             <span className="text-sm font-medium">Auto-refresh (60s)</span>
           </label>
@@ -108,7 +108,7 @@ const AnalyticsDashboard: React.FC = () => {
               refetch();
               toast.success('Data refreshed');
             }}
-            className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 font-medium"
+            className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 font-medium shadow-md hover:shadow-lg"
           >
             Refresh
           </button>
@@ -118,11 +118,11 @@ const AnalyticsDashboard: React.FC = () => {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Alerts */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm font-medium">Total Alerts</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">
+              <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Total Alerts</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-2">
                 {Object.values(data.alerts.status_counts).reduce((a, b) => a + b, 0)}
               </p>
             </div>
@@ -131,11 +131,11 @@ const AnalyticsDashboard: React.FC = () => {
         </div>
 
         {/* Active Alerts */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm font-medium">Active Alerts</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">
+              <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Active Alerts</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-2">
                 {data.alerts.total_active}
               </p>
             </div>
@@ -144,10 +144,10 @@ const AnalyticsDashboard: React.FC = () => {
         </div>
 
         {/* Overdue Alerts */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm font-medium">Overdue Alerts</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Overdue Alerts</p>
               <p className={`text-3xl font-bold mt-2 ${data.alerts.overdue_count > 0 ? 'text-red-600' : 'text-green-600'}`}>
                 {data.alerts.overdue_count}
               </p>
@@ -157,11 +157,11 @@ const AnalyticsDashboard: React.FC = () => {
         </div>
 
         {/* Total Patients */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm font-medium">Total Patients</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">
+              <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Total Patients</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-2">
                 {data.patients.total_patients}
               </p>
             </div>
@@ -195,8 +195,8 @@ const AnalyticsDashboard: React.FC = () => {
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Alert Status Distribution */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Alert Status Distribution</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Alert Status Distribution</h2>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -213,18 +213,18 @@ const AnalyticsDashboard: React.FC = () => {
                   <Cell key={`cell-${index}`} fill={color} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value) => `${value} alerts`} />
+              <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none', color: '#f3f4f6' }} formatter={(value) => `${value} alerts`} />
             </PieChart>
           </ResponsiveContainer>
           {/* Legend */}
           <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-            {statusChartData.map((item, index) => (
+            {statusChartData.map((item) => (
               <div key={item.name} className="flex items-center gap-2">
                 <div
                   className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: item.fill }}
                 ></div>
-                <span className="text-gray-700">
+                <span className="text-gray-700 dark:text-gray-300">
                   {item.name}: <strong>{item.value}</strong>
                 </span>
               </div>
@@ -233,14 +233,14 @@ const AnalyticsDashboard: React.FC = () => {
         </div>
 
         {/* Alert Severity Distribution */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Alert Severity Distribution</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Alert Severity Distribution</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={severityChartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis dataKey="name" stroke="#9ca3af" />
+              <YAxis stroke="#9ca3af" />
+              <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none', color: '#f3f4f6' }} />
               <Bar dataKey="value" fill="#8884d8" radius={[8, 8, 0, 0]}>
                 {severityChartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -252,9 +252,9 @@ const AnalyticsDashboard: React.FC = () => {
       </div>
 
       {/* Status Summary Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Alert Status Summary</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Alert Status Summary</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">

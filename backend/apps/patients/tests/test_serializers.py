@@ -4,19 +4,24 @@ Tests serializer validation, data transformation, and edge cases.
 """
 import pytest
 from django.core.exceptions import ValidationError
+from django.contrib.auth import get_user_model
 from apps.patients.serializers import (
     PatientListSerializer,
     PatientDetailSerializer,
     PatientCreateSerializer,
+    PatientRegistrationSerializer,
     AddressSerializer,
     EmergencyContactSerializer,
 )
+from apps.patients.models import Patient
 from apps.patients.tests.factories import (
     PatientFactory,
     AddressFactory,
     EmergencyContactFactory,
     UserFactory,
 )
+
+User = get_user_model()
 
 
 @pytest.mark.django_db
@@ -324,3 +329,118 @@ class TestPatientCreateSerializer:
         )
         assert not serializer.is_valid()
         assert "national_id" in serializer.errors
+
+
+@pytest.mark.django_db
+class TestPatientRegistrationSerializer:
+    """Unit tests for PatientRegistrationSerializer (portal registration)."""
+
+    def test_register_new_patient_with_user_account(self):
+        """Test registering a new patient creates both User and Patient."""
+        data = {
+            "username": "patient123",
+            "password": "SecurePass123!",
+            "password_confirm": "SecurePass123!",
+            "first_name": "John",
+            "last_name": "Doe",
+            "date_of_birth": "1990-01-01",
+            "gender": "M",
+            "national_id": "1234567890123456",
+            "phone_number": "+250788123456",
+            "email": "john@example.com",
+            "language_preference": "eng",
+        }
+
+        serializer = PatientRegistrationSerializer(data=data)
+        assert serializer.is_valid(), serializer.errors
+
+        patient = serializer.save()
+
+        # Verify patient created
+        assert patient.id is not None
+        assert patient.first_name == "John"
+        assert patient.national_id == "1234567890123456"
+
+        # Verify user created and linked
+        assert patient.user is not None
+        assert patient.user.username == "patient123"
+        assert patient.user.check_password("SecurePass123!")
+        assert patient.user.email == "john@example.com"
+
+        # Verify one-to-one relationship
+        assert patient.user.patient == patient
+
+    def test_registration_fails_if_passwords_dont_match(self):
+        """Test that registration fails if password confirmation doesn't match."""
+        data = {
+            "username": "patient123",
+            "password": "SecurePass123!",
+            "password_confirm": "DifferentPass456!",
+            "first_name": "John",
+            "last_name": "Doe",
+            "date_of_birth": "1990-01-01",
+            "gender": "M",
+            "national_id": "1234567890123456",
+            "phone_number": "+250788123456",
+        }
+
+        serializer = PatientRegistrationSerializer(data=data)
+        assert not serializer.is_valid()
+        assert "password" in serializer.errors
+
+    def test_registration_fails_if_username_exists(self):
+        """Test that registration fails if username already taken."""
+        UserFactory(username="existinguser")
+
+        data = {
+            "username": "existinguser",
+            "password": "SecurePass123!",
+            "password_confirm": "SecurePass123!",
+            "first_name": "John",
+            "last_name": "Doe",
+            "date_of_birth": "1990-01-01",
+            "gender": "M",
+            "national_id": "1234567890123456",
+            "phone_number": "+250788123456",
+        }
+
+        serializer = PatientRegistrationSerializer(data=data)
+        assert not serializer.is_valid()
+        assert "username" in serializer.errors
+
+    def test_registration_fails_if_national_id_exists(self):
+        """Test that registration fails if national ID already registered."""
+        PatientFactory(national_id="1234567890123456")
+
+        data = {
+            "username": "newuser",
+            "password": "SecurePass123!",
+            "password_confirm": "SecurePass123!",
+            "first_name": "John",
+            "last_name": "Doe",
+            "date_of_birth": "1990-01-01",
+            "gender": "M",
+            "national_id": "1234567890123456",  # Duplicate
+            "phone_number": "+250788123456",
+        }
+
+        serializer = PatientRegistrationSerializer(data=data)
+        assert not serializer.is_valid()
+        assert "national_id" in serializer.errors
+
+    def test_patient_detail_serializer_includes_portal_access_info(self):
+        """Test that PatientDetailSerializer shows portal access status."""
+        # Patient with portal access
+        user = UserFactory()
+        patient_with_access = PatientFactory(user=user)
+        serializer = PatientDetailSerializer(patient_with_access)
+        
+        assert serializer.data["has_portal_access"] is True
+        assert serializer.data["user_id"] == user.id
+
+        # Patient without portal access
+        patient_no_access = PatientFactory(user=None)
+        serializer = PatientDetailSerializer(patient_no_access)
+        
+        assert serializer.data["has_portal_access"] is False
+        assert serializer.data["user_id"] is None

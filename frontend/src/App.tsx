@@ -1,14 +1,35 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
+import { ThemeProvider } from './contexts/ThemeContext';
+import HomePage from './pages/HomePage';
+import LoginSelectionPage from './pages/LoginSelectionPage';
 import LoginPage from './pages/LoginPage';
+import PatientRegistrationPage from './pages/PatientRegistrationPage';
+import PatientLoginPage from './pages/PatientLoginPage';
+import PatientDashboardPage from './pages/PatientDashboardPage';
+import PatientAppointmentRequestPage from './pages/PatientAppointmentRequestPage';
+import PatientAppointmentsPage from './pages/PatientAppointmentsPage';
+import PatientMedicationsPage from './pages/PatientMedicationsPage';
+import PatientAlertsPage from './pages/PatientAlertsPage';
+import CaregiverBrowsePage from './pages/CaregiverBrowsePage';
+import PatientCaregiversPage from './pages/PatientCaregiversPage';
 import NurseDashboard from './pages/NurseDashboard';
 import AlertsPage from './pages/AlertsPage';
 import PatientQueuePage from './pages/PatientQueuePage';
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
+import MedicationsPage from './pages/MedicationsPage';
+import PatientProfilePage from './pages/PatientProfilePage';
+import PatientSettingsPage from './pages/PatientSettingsPage';
+import PatientMedicalInfoPage from './pages/PatientMedicalInfoPage';
+import MedicationAdherencePage from './pages/MedicationAdherencePage';
+import AppointmentsPage from './pages/AppointmentsPage';
+import DischargeSummariesPage from './pages/DischargeSummariesPage';
 import SettingsPage from './pages/SettingsPage';
-import ProtectedRoute from './components/ProtectedRoute';
+import NursePatientSearchPage from './pages/NursePatientSearchPage';
+import HealthProgressChartPage from './pages/HealthProgressChartPage';
+import ProtectedPatientRoute from './components/ProtectedPatientRoute';
+import RoleBasedRoute from './components/RoleBasedRoute';
 import DashboardLayout from './components/layout/DashboardLayout';
 
 const queryClient = new QueryClient({
@@ -23,62 +44,93 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#363636',
-              color: '#fff',
-              fontSize: '14px',
-              padding: '12px 20px',
-            },
-            success: {
-              duration: 3000,
-              iconTheme: {
-                primary: '#10b981',
-                secondary: '#fff',
-              },
-            },
-            error: {
-              duration: 8000,
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
               style: {
-                background: '#ef4444',
+                background: '#363636',
                 color: '#fff',
                 fontSize: '14px',
-                fontWeight: '500',
-                padding: '16px 24px',
+                padding: '12px 20px',
               },
-              iconTheme: {
-                primary: '#fff',
-                secondary: '#ef4444',
+              success: {
+                duration: 3000,
+                iconTheme: {
+                  primary: '#10b981',
+                  secondary: '#fff',
+                },
               },
-            },
-          }}
-        />
-        <Routes>
-          {/* Public routes */}
-          <Route path="/login" element={<LoginPage />} />
+              error: {
+                duration: 8000,
+                style: {
+                  background: '#ef4444',
+                  color: '#fff',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  padding: '16px 24px',
+                },
+                iconTheme: {
+                  primary: '#fff',
+                  secondary: '#ef4444',
+                },
+              },
+            }}
+          />
+          <Routes>
+            {/* HOME - Routes users based on auth status and role */}
+            <Route path="/" element={<HomePage />} />
 
-          {/* Protected routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route element={<DashboardLayout />}>
-              <Route path="/dashboard" element={<NurseDashboard />} />
-              <Route path="/alerts" element={<AlertsPage />} />
-              <Route path="/patients" element={<PatientQueuePage />} />
-              <Route path="/analytics" element={<AnalyticsDashboard />} />
-              <Route path="/settings" element={<SettingsPage />} />
+            {/* LOGIN SELECTION - Clear entry point for new users */}
+            <Route path="/login-selection" element={<LoginSelectionPage />} />
+
+            {/* PUBLIC AUTH ROUTES */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/patient/login" element={<PatientLoginPage />} />
+            <Route path="/patient/register" element={<PatientRegistrationPage />} />
+
+            {/* PROTECTED PATIENT ROUTES - Authenticated patients with PatientLayout */}
+            <Route element={<ProtectedPatientRoute />}>
+              <Route path="/patient/dashboard" element={<PatientDashboardPage />} />
+              <Route path="/patient/health" element={<HealthProgressChartPage />} />
+              <Route path="/patient/appointments" element={<PatientAppointmentsPage />} />
+              <Route path="/patient/appointments/request" element={<PatientAppointmentRequestPage />} />
+              <Route path="/patient/medications" element={<PatientMedicationsPage />} />
+              <Route path="/patient/alerts" element={<PatientAlertsPage />} />
+              <Route path="/patient/caregivers" element={<CaregiverBrowsePage />} />
+              <Route path="/patient/caregivers/:id/book" element={<PatientCaregiversPage />} />
+              <Route path="/patient/profile" element={<PatientProfilePage />} />
+              <Route path="/patient/settings" element={<PatientSettingsPage />} />
+              <Route path="/patient/medical-info" element={<PatientMedicalInfoPage />} />
             </Route>
-          </Route>
 
-          {/* Default redirect */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </QueryClientProvider>
+            {/* PROTECTED NURSE/STAFF ROUTES - Authenticated staff with DashboardLayout and role checking */}
+            <Route element={<RoleBasedRoute allowedRoles={['nurse', 'staff']} fallbackPath="/patient/login" />}>
+              <Route element={<DashboardLayout />}>
+                <Route path="/dashboard" element={<NurseDashboard />} />
+                <Route path="/alerts" element={<AlertsPage />} />
+                <Route path="/patients" element={<PatientQueuePage />} />
+                <Route path="/patients/search" element={<NursePatientSearchPage />} />
+                <Route path="/health" element={<HealthProgressChartPage />} />
+                <Route path="/health/:patientId" element={<HealthProgressChartPage />} />
+                <Route path="/medications" element={<MedicationsPage />} />
+                <Route path="/adherence" element={<MedicationAdherencePage />} />
+                <Route path="/appointments" element={<AppointmentsPage />} />
+                <Route path="/discharge-summaries" element={<DischargeSummariesPage />} />
+                <Route path="/analytics" element={<AnalyticsDashboard />} />
+                <Route path="/settings" element={<SettingsPage />} />
+              </Route>
+            </Route>
+
+            {/* FALLBACK - Redirect unknown routes to home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 

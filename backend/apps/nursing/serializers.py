@@ -43,6 +43,27 @@ class NurseProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_at', 'updated_at']
 
 
+class PatientAlertListSerializer(serializers.ModelSerializer):
+    """Simplified serializer for alert list views."""
+    patient_name = serializers.SerializerMethodField()
+    patient_id = serializers.PrimaryKeyRelatedField(
+        source='patient',
+        read_only=True
+    )
+    
+    class Meta:
+        model = PatientAlert
+        fields = [
+            'id', 'patient_id', 'patient_name', 'alert_type', 'severity',
+            'title', 'status', 'created_at', 'assigned_at', 'sla_deadline',
+            'is_overdue'
+        ]
+        read_only_fields = fields
+    
+    def get_patient_name(self, obj):
+        return obj.patient.full_name if obj.patient else None
+
+
 class PatientAlertSerializer(serializers.ModelSerializer):
     """Serializer for PatientAlert model."""
     patient = PatientDetailSerializer(read_only=True)

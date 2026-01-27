@@ -16,7 +16,7 @@ from apps.enrollment.serializers import (
     DischargeSummaryCreateSerializer
 )
 from apps.core.permissions import IsAuthenticatedUser
-
+from apps.patients.models import Patient
 
 class HospitalViewSet(viewsets.ModelViewSet):
     """ViewSet for Hospital model."""
@@ -66,6 +66,23 @@ class DischargeSummaryViewSet(viewsets.ModelViewSet):
     ]
     ordering_fields = ['discharge_date', 'created_at']
     ordering = ['-discharge_date']
+    
+    def get_queryset(self):
+        """Filter discharge summaries based on user type."""
+        queryset = DischargeSummary.objects.select_related('patient', 'hospital', 'created_by').all()
+        if hasattr(self.request.user, 'patient'):
+            patient = self.request.user.patient
+            queryset = queryset.filter(patient=patient)
+            print(f'🔐 [DISCHARGE SUMMARY FILTER] Patient {patient.id} - {patient.full_name}')
+        else:
+            patient_id = self.request.query_params.get('patient_id')
+            if patient_id:
+                try:
+                    patient = Patient.objects.get(id=patient_id)
+                    queryset = queryset.filter(patient=patient)
+                except Patient.DoesNotExist:
+                    pass
+        return queryset
     
     def get_serializer_class(self):
         """Return appropriate serializer based on action."""

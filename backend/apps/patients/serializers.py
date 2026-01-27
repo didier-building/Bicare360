@@ -73,10 +73,15 @@ class PatientListSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "full_name",
+            "first_name",
+            "last_name",
+            "email",
+            "date_of_birth",
             "national_id",
             "phone_number",
             "age",
             "gender",
+            "blood_type",
             "is_active",
             "enrolled_date",
         ]
@@ -92,11 +97,16 @@ class PatientDetailSerializer(serializers.ModelSerializer):
     enrolled_by_username = serializers.CharField(
         source="enrolled_by.username", read_only=True
     )
+    # User info for patient portal (read-only in this serializer)
+    user_id = serializers.IntegerField(source="user.id", read_only=True, allow_null=True)
+    has_portal_access = serializers.SerializerMethodField()
 
     class Meta:
         model = Patient
         fields = [
             "id",
+            "user_id",
+            "has_portal_access",
             "first_name",
             "last_name",
             "first_name_kinyarwanda",
@@ -121,6 +131,10 @@ class PatientDetailSerializer(serializers.ModelSerializer):
             "emergency_contacts",
         ]
         read_only_fields = ["id", "enrolled_date", "updated_at", "enrolled_by_username"]
+
+    def get_has_portal_access(self, obj):
+        """Check if patient has portal access (linked user account)."""
+        return obj.user is not None
 
     def create(self, validated_data):
         """Create patient with nested address and emergency contacts."""
@@ -205,3 +219,70 @@ class PatientCreateSerializer(serializers.ModelSerializer):
                 "A patient with this National ID already exists."
             )
         return value
+
+
+class PatientRegistrationSerializer(serializers.ModelSerializer):
+    """
+    Serializer for patient self-registration (portal access).
+    Creates both User account and Patient profile.
+    """
+    
+    username = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+    password_confirm = serializers.CharField(write_only=True, style={'input_type': 'password'})
+    
+    class Meta:
+        model = Patient
+        fields = [
+            "username",
+            "password",
+            "password_confirm",
+            "first_name",
+            "last_name",
+            "first_name_kinyarwanda",
+            "last_name_kinyarwanda",
+            "date_of_birth",
+            "gender",
+            "national_id",
+            "phone_number",
+            "alt_phone_number",
+            "email",
+            "prefers_sms",
+            "prefers_whatsapp",
+            "language_preference",
+        ]
+    
+    def validate(self, data):
+        """Validate password match and uniqueness."""
+        if data['password'] != data['password_confirm']:
+            raise serializers.ValidationError({"password": "Passwords do not match."})
+        
+        if User.objects.filter(username=data['username']).exists():
+            raise serializers.ValidationError({"username": "Username already taken."})
+        
+        if Patient.objects.filter(national_id=data['national_id']).exists():
+            raise serializers.ValidationError(
+                {"national_id": "A patient with this National ID already exists."}
+            )
+        
+        return data
+    
+    def create(self, validated_data):
+        """Create User account and link to Patient profile."""
+        username = validated_data.pop('username')
+        password = validated_data.pop('password')
+        validated_data.pop('password_confirm')
+        
+        # Create User account
+        user = User.objects.create_user(
+            username=username,
+            password=password,
+            email=validated_data.get('email', ''),
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
+        )
+        
+        # Create Patient profile linked to user
+        patient = Patient.objects.create(user=user, **validated_data)
+        
+        return patient

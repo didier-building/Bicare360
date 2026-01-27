@@ -68,7 +68,7 @@ const PatientQueuePage: React.FC = () => {
         <p className="text-red-500 text-sm mb-4">{error instanceof Error ? error.message : 'Unknown error'}</p>
         <button
           onClick={() => refetch()}
-          className="mt-4 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
+          className="mt-4 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 shadow-md hover:shadow-lg transition-all"
         >
           Retry
         </button>
@@ -80,24 +80,24 @@ const PatientQueuePage: React.FC = () => {
     <div>
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Patient Queue</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Patient Queue</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
           Manage and view patient enrollment records
         </p>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
           <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+            <MagnifyingGlassIcon className="absolute left-3 top-3 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
               placeholder="Search by name, ID, or phone..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
 
@@ -105,7 +105,7 @@ const PatientQueuePage: React.FC = () => {
           <select
             value={genderFilter}
             onChange={(e) => setGenderFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           >
             <option value="">All Genders</option>
             <option value="M">Male</option>
@@ -114,7 +114,7 @@ const PatientQueuePage: React.FC = () => {
           </select>
 
           {/* Results Count */}
-          <div className="flex items-center justify-end text-sm text-gray-600">
+          <div className="flex items-center justify-end text-sm text-gray-600 dark:text-gray-400">
             {filteredPatients.length} patient{filteredPatients.length !== 1 ? 's' : ''} found
           </div>
         </div>
@@ -122,8 +122,8 @@ const PatientQueuePage: React.FC = () => {
 
       {/* Patient List */}
       {filteredPatients.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow">
-          <p className="text-gray-600 text-lg">
+        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow">
+          <p className="text-gray-600 dark:text-gray-400 text-lg">
             {searchQuery || genderFilter ? 'No patients found matching your filters' : 'No patients in queue'}
           </p>
         </div>
@@ -132,15 +132,15 @@ const PatientQueuePage: React.FC = () => {
           {filteredPatients.map((patient) => (
             <div
               key={patient.id}
-              className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6"
+              className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow p-6"
             >
               {/* Patient Header */}
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
                     {patient.full_name}
                   </h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     National ID: {patient.national_id}
                   </p>
                 </div>
@@ -156,22 +156,22 @@ const PatientQueuePage: React.FC = () => {
               {/* Patient Info Grid */}
               <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
                 <div>
-                  <p className="text-gray-600">Age</p>
-                  <p className="font-semibold text-gray-900">{patient.age} years</p>
+                  <p className="text-gray-600 dark:text-gray-400">Age</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">{patient.age} years</p>
                 </div>
                 <div>
-                  <p className="text-gray-600">Gender</p>
-                  <p className="font-semibold text-gray-900">
+                  <p className="text-gray-600 dark:text-gray-400">Gender</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">
                     {patient.gender === 'M' ? 'Male' : patient.gender === 'F' ? 'Female' : 'Other'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-gray-600">Phone</p>
-                  <p className="font-semibold text-gray-900">{patient.phone_number}</p>
+                  <p className="text-gray-600 dark:text-gray-400">Phone</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">{patient.phone_number}</p>
                 </div>
                 <div>
-                  <p className="text-gray-600">Enrolled</p>
-                  <p className="font-semibold text-gray-900">
+                  <p className="text-gray-600 dark:text-gray-400">Enrolled</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">
                     {formatDistanceToNow(new Date(patient.enrolled_date), {
                       addSuffix: true,
                     })}
@@ -182,7 +182,7 @@ const PatientQueuePage: React.FC = () => {
               {/* Action Button */}
               <button
                 onClick={() => handleViewDetails(patient.id)}
-                className="w-full px-4 py-2 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 transition-colors"
+                className="w-full px-4 py-2 bg-teal-500 text-white rounded-lg font-medium hover:bg-teal-600 transition-colors shadow-md hover:shadow-lg"
               >
                 View Details
               </button>

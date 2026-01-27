@@ -176,3 +176,34 @@ class IsProviderOrAdmin(permissions.BasePermission):
             return obj.patient.hospitals.filter(providers=provider).exists()
         
         return False
+
+
+class IsNurse(permissions.BasePermission):
+    """
+    Allows access only to users with NurseProfile.
+    """
+
+    def has_permission(self, request, view):
+        """Check if user is authenticated and has a NurseProfile."""
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        return hasattr(request.user, 'nurse_profile')
+
+
+class IsNurseOrAdmin(permissions.BasePermission):
+    """
+    Allows access to nurses or admins.
+    """
+
+    def has_permission(self, request, view):
+        """Check permissions at view level."""
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        # Allow admins
+        if request.user.is_staff:
+            return True
+        
+        # Allow nurses
+        return hasattr(request.user, 'nurse_profile')

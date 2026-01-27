@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../stores/authStore';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 const LoginPage: React.FC = () => {
@@ -89,16 +89,19 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-8">
+    <div className="min-h-screen bg-gradient-to-br from-primary-500 via-teal-500 to-primary-700 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">BiCare360</h1>
-          <p className="text-gray-600 mt-2">Post-Discharge Healthcare Management</p>
+          <div className="flex justify-center mb-4">
+            <img src="/logo.png" alt="BiCare360 Logo" className="h-20 w-20 object-contain" />
+          </div>
+          <h1 className="text-3xl font-bold text-primary-600 dark:text-primary-400">BiCare360</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">Post-Discharge Healthcare Management</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6" noValidate>
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Username or Email
             </label>
             <input
@@ -111,8 +114,8 @@ const LoginPage: React.FC = () => {
                   setValidationErrors({ ...validationErrors, username: undefined });
                 }
               }}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors ${
-                validationErrors.username ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 dark:border-gray-600 ${
+                validationErrors.username ? 'border-red-300 dark:border-red-400 focus:ring-red-500' : 'border-gray-300'
               }`}
               placeholder="Enter your username or email"
               aria-label="Username or Email"
@@ -122,14 +125,14 @@ const LoginPage: React.FC = () => {
               disabled={isLoading}
             />
             {validationErrors.username && (
-              <p id="username-error" className="mt-1 text-sm text-red-600" role="alert">
+              <p id="username-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
                 {validationErrors.username}
               </p>
             )}
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Password
             </label>
             <input
@@ -142,8 +145,8 @@ const LoginPage: React.FC = () => {
                   setValidationErrors({ ...validationErrors, password: undefined });
                 }
               }}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors ${
-                validationErrors.password ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 dark:border-gray-600 ${
+                validationErrors.password ? 'border-red-300 dark:border-red-400 focus:ring-red-500' : 'border-gray-300'
               }`}
               placeholder="Enter your password"
               aria-label="Password"
@@ -153,7 +156,7 @@ const LoginPage: React.FC = () => {
               disabled={isLoading}
             />
             {validationErrors.password && (
-              <p id="password-error" className="mt-1 text-sm text-red-600" role="alert">
+              <p id="password-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
                 {validationErrors.password}
               </p>
             )}
@@ -162,7 +165,7 @@ const LoginPage: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-primary-500 hover:bg-primary-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 flex items-center justify-center"
+            className="w-full bg-teal-500 hover:bg-teal-600 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 flex items-center justify-center shadow-md hover:shadow-lg"
             aria-busy={isLoading}
           >
             {isLoading ? (
@@ -196,8 +199,18 @@ const LoginPage: React.FC = () => {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-600">
+        <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
           <p>Demo credentials: nurse@test.com / test123</p>
+          <p className="mt-4">
+            Not a nurse?{' '}
+            <Link to="/patient/register" className="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium">
+              Register as a patient
+            </Link>
+            {' / '}
+            <Link to="/patient/login" className="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium">
+              Login as patient
+            </Link>
+          </p>
         </div>
       </div>
     </div>

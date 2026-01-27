@@ -2,6 +2,7 @@
 Patient models for BiCare 360.
 Handles patient enrollment, contact information, and basic demographics.
 """
+from django.conf import settings
 from django.db import models
 from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
@@ -10,6 +11,7 @@ from django.utils.translation import gettext_lazy as _
 class Patient(models.Model):
     """
     Patient model representing individuals enrolled in BiCare 360.
+    Links to Django User for authentication (patient portal access).
     """
 
     GENDER_CHOICES = [
@@ -28,6 +30,16 @@ class Patient(models.Model):
         ("O+", "O+"),
         ("O-", "O-"),
     ]
+
+    # Authentication Link (for patient portal)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="patient",
+        help_text=_("Django user account for patient portal authentication"),
+    )
 
     # Basic Information
     first_name = models.CharField(max_length=100)

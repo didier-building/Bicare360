@@ -62,9 +62,40 @@ export interface PatientResponse<T> {
   results: T[];
 }
 
+export interface SearchPatient extends PatientList {
+  first_name: string;
+  last_name: string;
+  email?: string;
+  date_of_birth?: string;
+  blood_type?: string;
+}
+
 const BASE_URL = '/v1/patients';
 
 export const patientsAPI = {
+  /**
+   * Advanced patient search with full-text search and filtering
+   */
+  searchPatients: async (params?: {
+    q?: string;
+    is_active?: boolean | string;
+    gender?: string;
+    blood_type?: string;
+    enrolled_after?: string;
+    enrolled_before?: string;
+    sort?: string;
+    order?: 'asc' | 'desc';
+    limit?: number;
+  }): Promise<SearchPatient[]> => {
+    try {
+      const response = await client.get(`${BASE_URL}/search/`, { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to search patients:', error);
+      throw error;
+    }
+  },
+
   /**
    * Get list of patients with filtering and search
    */

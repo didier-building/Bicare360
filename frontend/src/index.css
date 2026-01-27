@@ -1,14 +1,143 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
+  /* BiCare360 Brand Colors - Teal Palette */
+  
+  /* Deep Teal - Primary brand color (navigation, primary buttons, headings, critical actions) */
+  --color-primary-50: #e6f3f5;
+  --color-primary-100: #cce7ea;
+  --color-primary-200: #99cfd5;
+  --color-primary-300: #66b7c0;
+  --color-primary-400: #339fab;
+  --color-primary-500: #06586d; /* Deep Teal - Main Brand */
+  --color-primary-600: #054a5a;
+  --color-primary-700: #043b47;
+  --color-primary-800: #032d35;
+  --color-primary-900: #021e22;
+  
+  /* Teal - Interactive elements (icons, active states) */
+  --color-teal-50: #e8f7f6;
+  --color-teal-100: #d1efed;
+  --color-teal-200: #a3dfdb;
+  --color-teal-300: #75cfc9;
+  --color-teal-400: #47bfb7;
+  --color-teal-500: #28958f; /* Primary Teal */
+  --color-teal-600: #207772;
+  --color-teal-700: #185956;
+  --color-teal-800: #103c39;
+  --color-teal-900: #081e1d;
+  
+  /* Secondary Teal - Supporting elements (secondary buttons, borders) */
+  --color-secondary-50: #e7f4f4;
+  --color-secondary-100: #cfe9e9;
+  --color-secondary-200: #9fd3d3;
+  --color-secondary-300: #6fbdbd;
+  --color-secondary-400: #3fa7a7;
+  --color-secondary-500: #158384; /* Secondary Teal */
+  --color-secondary-600: #11696a;
+  --color-secondary-700: #0d4f4f;
+  --color-secondary-800: #083435;
+  --color-secondary-900: #041a1a;
+  
+  /* Soft Aqua - Backgrounds, hover states, decorative */
+  --color-aqua-50: #f5fcfc;
+  --color-aqua-100: #ebf9f9;
+  --color-aqua-200: #d7f3f3;
+  --color-aqua-300: #c3eded;
+  --color-aqua-400: #afe7e7;
+  --color-aqua-500: #9ac7c8; /* Soft Aqua */
+  --color-aqua-600: #7b9fa0;
+  --color-aqua-700: #5c7778;
+  --color-aqua-800: #3e5050;
+  --color-aqua-900: #1f2828;
+  
+  /* Background - Warm Off-White for readability */
+  --color-background: #faf7f0;
+  --color-background-dark: #1a1a1a;
+  
+  /* Semantic Colors */
+  --color-success-500: #10b981;
+  --color-warning-500: #f59e0b;
+  --color-error-500: #ef4444;
+  --color-info-500: #3b82f6;
+  
+  /* Text Colors */
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+  
+  /* Spacing enhancements for healthcare UI */
+  --spacing-section: 3rem;
+  --radius-card: 0.75rem;
+  --radius-button: 0.5rem;
+}
+
+/* Global Styles */
+body {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utility Classes */
+.bg-primary {
+  background-color: var(--color-primary-500);
+}
+
+.text-primary {
+  color: var(--color-primary-500);
+}
+
+.border-primary {
+  border-color: var(--color-primary-500);
+}
+
+.btn-primary {
+  background-color: var(--color-primary-500);
+  color: white;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius-button);
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-600);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(6, 88, 109, 0.1);
+}
+
+.btn-secondary {
+  background-color: var(--color-secondary-500);
+  color: white;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius-button);
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-secondary-600);
+}
+
+.card {
+  background-color: white;
+  border-radius: var(--radius-card);
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode support */
+.dark body {
+  background-color: var(--color-background-dark);
+  color: #f9fafb;
+}
+
+.dark .card {
+  background-color: #1f2937;
 }
