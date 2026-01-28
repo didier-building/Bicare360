@@ -21,6 +21,7 @@ urlpatterns = [
     path("api/v1/", include("apps.consents.urls")),
     path("api/v1/", include("apps.messaging.urls")),
     path("api/v1/", include("apps.nursing.urls")),
+    path("api/v1/", include("apps.caregivers.urls")),
     # API Documentation
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),

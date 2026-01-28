@@ -51,6 +51,7 @@ LOCAL_APPS = [
     "apps.consents",
     "apps.messaging",
     "apps.nursing",
+    "apps.caregivers",
     "apps.vitals",
 ]
 

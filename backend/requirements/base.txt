@@ -1,16 +1,13 @@
 # Core Django & Database
 Django==4.2.9
 djangorestframework==3.14.0
-psycopg2-binary==2.9.9
 django-environ==0.11.2
-
-# PostgreSQL Extensions
-pgvector==0.2.4
 
 # API & Documentation
 drf-spectacular==0.27.1
 django-cors-headers==4.3.1
 django-filter==24.1
+drf-nested-routers==0.93.5
 
 # Task Queue
 celery==5.3.6
