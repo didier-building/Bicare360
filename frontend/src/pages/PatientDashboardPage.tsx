@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
+import { adherenceAPI } from '../api/adherence';
+import vitalsAPI from '../api/vitals';
 import SymptomReportModal from '../components/SymptomReportModal';
 import RefillRequestModal from '../components/RefillRequestModal';
 
@@ -53,6 +55,16 @@ interface Alert {
   status: string;
 }
 
+interface VitalReading {
+  id: number;
+  reading_type: string;
+  value: number;
+  secondary_value?: number;
+  unit: string;
+  recorded_at: string;
+  notes?: string;
+}
+
 export default function PatientDashboardPage() {
   const navigate = useNavigate();
   const [patient, setPatient] = useState<PatientInfo | null>(null);
@@ -67,6 +79,9 @@ export default function PatientDashboardPage() {
   const [isRefillModalOpen, setIsRefillModalOpen] = useState(false);
   const [medicationAdherence, setMedicationAdherence] = useState<{[key: number]: boolean}>({});
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [vitals, setVitals] = useState<VitalReading[]>([]);
+  const [adherenceRate, setAdherenceRate] = useState<number>(0);
+  const [lastSymptomDate, setLastSymptomDate] = useState<string | null>(null);
 
   useEffect(() => {
     const accessToken = localStorage.getItem('access_token');
@@ -82,47 +97,87 @@ export default function PatientDashboardPage() {
 
         // Fetch patient info
         const patientResponse = await client.get('/v1/patients/me/');
-        setPatient(patientResponse.data);
+        const patientData = patientResponse.data;
+        setPatient(patientData);
 
         // Fetch medications (prescriptions for this patient)
         try {
-          const medicationsResponse = await client.get('/v1/prescriptions/?patient_id=' + patientResponse.data.id);
-          setMedications(medicationsResponse.data.results || medicationsResponse.data);
+          const medicationsResponse = await client.get('/v1/prescriptions/?patient_id=' + patientData.id);
+          const medicationsData = medicationsResponse.data.results || medicationsResponse.data;
+          setMedications(Array.isArray(medicationsData) ? medicationsData : []);
         } catch (err) {
           console.log('No prescriptions endpoint found, continuing...');
         }
 
         // Fetch appointments
         try {
-          const appointmentsResponse = await client.get('/v1/appointments/?patient_id=' + patientResponse.data.id);
-          setAppointments(appointmentsResponse.data.results || appointmentsResponse.data);
+          const appointmentsResponse = await client.get('/v1/appointments/?patient_id=' + patientData.id);
+          const appointmentsData = appointmentsResponse.data.results || appointmentsResponse.data;
+          setAppointments(Array.isArray(appointmentsData) ? appointmentsData : []);
         } catch (err) {
           console.log('No appointments endpoint found, continuing...');
         }
 
         // Fetch discharge summaries
         try {
-          const summariesResponse = await client.get('/v1/discharge-summaries/?patient_id=' + patientResponse.data.id);
-          setSummaries(summariesResponse.data.results || summariesResponse.data);
+          const summariesResponse = await client.get('/v1/discharge-summaries/?patient_id=' + patientData.id);
+          const summariesData = summariesResponse.data.results || summariesResponse.data;
+          setSummaries(Array.isArray(summariesData) ? summariesData : []);
         } catch (err) {
           console.log('No discharge summaries endpoint found, continuing...');
         }
 
         // Fetch alerts
         try {
-          const alertsResponse = await client.get('/v1/nursing/alerts/?patient_id=' + patientResponse.data.id);
-          setAlerts(alertsResponse.data.results || alertsResponse.data);
+          const alertsResponse = await client.get('/v1/nursing/alerts/?patient_id=' + patientData.id);
+          const alertsData = alertsResponse.data.results || alertsResponse.data;
+          setAlerts(Array.isArray(alertsData) ? alertsData : []);
         } catch (err) {
           console.log('No alerts endpoint found, continuing...');
         }
 
-        // Fetch medication tracking (commented out as not currently used)
-        // try {
-        //   const trackingResponse = await client.get('/v1/tracking/');
-        //   // trackingData would be used here if needed
-        // } catch (err) {
-        //   console.log('No medication tracking endpoint found, continuing...');
-        // }
+        // Fetch vitals (latest readings)
+        try {
+          const vitalsResponse = await vitalsAPI.getLatestVitals(patientData.id);
+          console.log('Vitals fetched:', vitalsResponse);
+          setVitals(Array.isArray(vitalsResponse) ? vitalsResponse : []);
+        } catch (err) {
+          console.log('Failed to fetch vitals:', err);
+          setVitals([]);
+        }
+
+        // Fetch medication adherence rate (last 7 days)
+        try {
+          const today = new Date();
+          const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+          const adherenceResponse = await adherenceAPI.getAdherenceRecords({
+            patient_id: patientData.id,
+            scheduled_date__gte: sevenDaysAgo.toISOString().split('T')[0],
+            page_size: 1000
+          });
+          
+          if (adherenceResponse && adherenceResponse.results) {
+            const totalDoses = adherenceResponse.results.length;
+            const takenDoses = adherenceResponse.results.filter((r: any) => r.status === 'taken').length;
+            const rate = totalDoses > 0 ? Math.round((takenDoses / totalDoses) * 100) : 0;
+            setAdherenceRate(rate);
+            console.log(`Adherence rate: ${takenDoses}/${totalDoses} = ${rate}%`);
+          }
+        } catch (err) {
+          console.log('Failed to fetch adherence data:', err);
+          setAdherenceRate(0);
+        }
+
+        // Fetch last symptom report date
+        try {
+          const alertsWithSymptoms = await client.get('/v1/nursing/alerts/?alert_type=symptom_report&patient_id=' + patientData.id + '&page_size=1');
+          const alertsData = alertsWithSymptoms.data.results || alertsWithSymptoms.data;
+          if (Array.isArray(alertsData) && alertsData.length > 0) {
+            setLastSymptomDate(new Date(alertsData[0].created_at).toLocaleDateString());
+          }
+        } catch (err) {
+          console.log('Failed to fetch symptom date:', err);
+        }
       } catch (err) {
         console.error('Dashboard error:', err);
         setError('Failed to load dashboard data');
@@ -186,22 +241,22 @@ export default function PatientDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       {/* Professional Header */}
-      <header className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-b border-gray-200/50 dark:border-slate-700/50 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-xl flex items-center justify-center">
-                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
                 </svg>
               </div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
-                  BiCare360 Patient Portal
+                <h1 className="text-xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
+                  BiCare360
                 </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Comprehensive Healthcare Management</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Patient Portal</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -336,230 +391,200 @@ export default function PatientDashboardPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
         {/* Error Alert */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
-            <p className="text-red-700 dark:text-red-200">{error}</p>
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+            <p className="text-red-700 dark:text-red-200 text-sm">{error}</p>
           </div>
         )}
 
-        {/* Welcome Card with Patient Info */}
-        {patient && (
-          <div className="bg-gradient-to-r from-teal-500 to-cyan-600 rounded-2xl shadow-xl p-8 mb-8 text-white">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-              <div>
-                <div className="flex items-center mb-4">
-                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mr-4">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h2 className="text-3xl font-bold">Welcome back, {patient.first_name}!</h2>
-                    <p className="text-teal-100 mt-1">Here's your health overview for today</p>
-                  </div>
-                </div>
-                <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-teal-100">Patient ID</p>
-                      <p className="font-semibold">{patient.national_id}</p>
-                    </div>
-                    <div>
-                      <p className="text-teal-100">Age</p>
-                      <p className="font-semibold">{new Date().getFullYear() - new Date(patient.date_of_birth).getFullYear()}</p>
-                    </div>
-                    <div>
-                      <p className="text-teal-100">Phone</p>
-                      <p className="font-semibold">{patient.phone_number}</p>
-                    </div>
-                    <div>
-                      <p className="text-teal-100">Email</p>
-                      <p className="font-semibold truncate">{patient.email}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Quick Actions */}
-              <div className="lg:text-right">
-                <h3 className="text-xl font-semibold mb-4">Quick Actions</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <button 
-                    onClick={() => {
-                      console.log('Report Symptoms clicked');
-                      setIsSymptomModalOpen(true);
-                    }}
-                    className="bg-white/20 hover:bg-white/30 backdrop-blur-sm p-4 rounded-lg transition-all duration-200 hover:scale-105"
-                  >
-                    <svg className="w-6 h-6 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <p className="text-sm font-medium">Report Symptoms</p>
-                  </button>
-                  <button 
-                    onClick={() => {
-                      console.log('Request Refill clicked');
-                      setIsRefillModalOpen(true);
-                    }}
-                    className="bg-white/20 hover:bg-white/30 backdrop-blur-sm p-4 rounded-lg transition-all duration-200 hover:scale-105"
-                  >
-                    <svg className="w-6 h-6 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                    </svg>
-                    <p className="text-sm font-medium">Request Refill</p>
-                  </button>
-                <button 
-                  onClick={() => {
-                    console.log('Emergency Alert clicked');
-                    window.open('tel:911', '_self');
-                  }}
-                  className="bg-white/20 hover:bg-white/30 backdrop-blur-sm p-4 rounded-lg transition-all duration-200 hover:scale-105"
-                >
-                  <svg className="w-6 h-6 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                  <p className="text-sm font-medium">Emergency Alert</p>
-                </button>
-                  <button 
-                    onClick={() => navigate('/patient/appointments/request')}
-                    className="bg-white/20 hover:bg-white/30 backdrop-blur-sm p-4 rounded-lg transition-all duration-200 hover:scale-105"
-                  >
-                    <svg className="w-6 h-6 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V8a1 1 0 011-1h4z" />
-                    </svg>
-                    <p className="text-sm font-medium">Book Appointment</p>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+          {patient ? `${patient.first_name}'s Dashboard` : 'Patient Dashboard'}
+        </h1>
 
         {/* Tab Navigation */}
-        <div className="flex flex-wrap gap-2 mb-8 bg-white dark:bg-slate-800 rounded-xl shadow p-4 items-center justify-between">
-          <div className="flex flex-wrap gap-2">
-            {['overview', 'medications', 'appointments', 'summaries', 'alerts'].map((tab) => (
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-3 mb-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex flex-wrap gap-2">
+              {['overview', 'medications', 'appointments', 'summaries', 'alerts'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm ${
+                    activeTab === tab
+                      ? 'bg-teal-600 text-white shadow-lg'
+                      : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
+                  }`}
+                >
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 ${
-                  activeTab === tab
-                    ? 'bg-teal-600 text-white shadow-lg'
-                    : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
-                }`}
+                onClick={() => navigate('/patient/appointments/request')}
+                className="flex-1 sm:flex-none px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-medium rounded-lg transition-all duration-200 text-sm whitespace-nowrap"
               >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                + Request Appointment
               </button>
-            ))}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => navigate('/patient/appointments/request')}
-              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-medium rounded-lg transition-all duration-200 text-sm sm:text-base whitespace-nowrap"
-            >
-              + Request Appointment
-            </button>
-            <button
-              onClick={() => navigate('/patient/caregivers')}
-              className="px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-medium rounded-lg transition-all duration-200 text-sm sm:text-base whitespace-nowrap"
-            >
-              🏥 Find Caregivers
-            </button>
+              <button
+                onClick={() => navigate('/patient/caregivers')}
+                className="flex-1 sm:flex-none px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-medium rounded-lg transition-all duration-200 text-sm whitespace-nowrap"
+              >
+                🏥 Find Caregivers
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Overview Tab */}
         {activeTab === 'overview' && (
-          <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Active Medications Card */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer" onClick={() => setActiveTab('medications')}>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Active Medications</h3>
-                <span className="text-3xl font-bold text-teal-600 dark:text-teal-400">{medications.length}</span>
-              </div>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                Track medications and adherence
+          <div>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Medications</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-2">
+                {medications.length}
               </p>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate('/patient/medications');
-                }}
-                className="w-full py-2 px-4 bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 rounded-lg hover:bg-teal-100 dark:hover:bg-teal-900/50 font-medium transition-colors"
-              >
-                View Details →
-              </button>
             </div>
-
-            {/* Upcoming Appointments Card */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Appointments</h3>
-                <span className="text-3xl font-bold text-blue-600 dark:text-blue-400">{appointments.length}</span>
-              </div>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                Scheduled appointments
+            
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Appointments</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-2">
+                {appointments.length}
               </p>
-              <button
-                onClick={() => setActiveTab('appointments')}
-                className="w-full py-2 px-4 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 font-medium transition-colors"
-              >
-                View Details →
-              </button>
             </div>
-
-            {/* Discharge Summaries Card */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Discharge Summaries</h3>
-                <span className="text-3xl font-bold text-purple-600 dark:text-purple-400">{summaries.length}</span>
-              </div>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                Hospital discharge records
+            
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Critical Alerts</p>
+              <p className="text-3xl font-bold text-red-600 dark:text-red-400 mt-2">
+                {alerts.filter(a => a.severity === 'critical').length}
               </p>
-              <button
-                onClick={() => setActiveTab('summaries')}
-                className="w-full py-2 px-4 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/50 font-medium transition-colors"
-              >
-                View Details →
-              </button>
             </div>
-
-            {/* Health Alerts Card */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Health Alerts</h3>
-                <span className={`text-3xl font-bold ${
-                  alerts.filter(a => a.severity === 'critical').length > 0 
-                    ? 'text-red-600 dark:text-red-400' 
-                    : 'text-orange-600 dark:text-orange-400'
-                }`}>
-                  {alerts.length}
-                </span>
-              </div>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                {alerts.filter(a => a.severity === 'critical').length > 0 
-                  ? `${alerts.filter(a => a.severity === 'critical').length} critical alerts`
-                  : 'No critical alerts'}
+            
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Discharge Summaries</p>
+              <p className="text-3xl font-bold text-purple-600 dark:text-purple-400 mt-2">
+                {summaries.length}
               </p>
-              <button
-                onClick={() => navigate('/patient/alerts')}
-                className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
-                  alerts.filter(a => a.severity === 'critical').length > 0
-                    ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50'
-                    : 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900/50'
-                }`}
-              >
-                View Alerts →
-              </button>
             </div>
           </div>
 
-          {/* Daily Medication Check-in */}
-          {medications.length > 0 && (
+          {/* Active Medications Section */}
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6 mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Active Medications
+              </h2>
+              <button
+                onClick={() => navigate('/patient/medications')}
+                className="text-sm text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium"
+              >
+                View All →
+              </button>
+            </div>
+
+            {medications.length === 0 ? (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                No active medications
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {medications.slice(0, 5).map((medication) => (
+                  <div
+                    key={medication.id}
+                    className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900 dark:text-gray-100">{medication.name}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {medication.dosage} • {medication.frequency}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {medicationAdherence[medication.id] ? (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
+                          ✓ Taken
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleMedicationTaken(medication.id)}
+                          className="px-3 py-1 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded-lg transition-colors"
+                        >
+                          Mark Taken
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Health Alerts Section */}
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6 mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Health Alerts
+              </h2>
+              <button
+                onClick={() => navigate('/patient/alerts')}
+                className="text-sm text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium"
+              >
+                View All →
+              </button>
+            </div>
+
+            {alerts.length === 0 ? (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                No active alerts
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {alerts.slice(0, 5).map((alert) => {
+                  const severityColors = {
+                    critical: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800',
+                    high: 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 border-orange-200 dark:border-orange-800',
+                    medium: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
+                    low: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+                  };
+
+                  return (
+                    <div
+                      key={alert.id}
+                      className={`flex items-center justify-between p-4 border rounded-lg transition-colors ${severityColors[alert.severity as keyof typeof severityColors]}`}
+                    >
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">
+                          {alert.title || alert.alert_type.replace('_', ' ').toUpperCase()}
+                        </p>
+                        <p className="text-sm mt-1">
+                          {alert.alert_type.replace('_', ' ')}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="text-xs font-medium uppercase">
+                          {alert.severity}
+                        </span>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                          alert.status === 'new' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300' :
+                          alert.status === 'resolved' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
+                          'bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300'
+                        }`}>
+                          {alert.status.toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Daily Medication Check-in - REMOVED, now in Active Medications section above */}
+          {false && medications.length > 0 && (
             <div className="mt-8 bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden">
               <div className="px-6 py-4 bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/30 dark:to-teal-900/30 border-b border-green-200 dark:border-green-800">
                 <h3 className="text-xl font-bold text-green-900 dark:text-green-50 flex items-center gap-2">
@@ -606,8 +631,61 @@ export default function PatientDashboardPage() {
             </div>
           )}
 
+          {/* Upcoming Appointments Section */}
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6 mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Upcoming Appointments
+              </h2>
+              <button
+                onClick={() => setActiveTab('appointments')}
+                className="text-sm text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium"
+              >
+                View All →
+              </button>
+            </div>
+
+            {appointments.length === 0 ? (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                No upcoming appointments
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {appointments.slice(0, 3).map((apt) => (
+                  <div
+                    key={apt.id}
+                    className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900 dark:text-gray-100">
+                        {apt.appointment_type?.replace('_', ' ').toUpperCase() || 'Appointment'}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {new Date(apt.appointment_datetime).toLocaleDateString()} at {new Date(apt.appointment_datetime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      </p>
+                      {apt.provider_name && (
+                        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                          {apt.provider_name}
+                        </p>
+                      )}
+                    </div>
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                      apt.status === 'scheduled' || apt.status === 'confirmed'
+                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
+                        : apt.status === 'completed'
+                        ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                        : 'bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300'
+                    }`}>
+                      {apt.status.toUpperCase()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Health Progress Section */}
-          <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Medication Adherence Chart */}
             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden">
               <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-b border-blue-200 dark:border-blue-800">
@@ -621,31 +699,32 @@ export default function PatientDashboardPage() {
               </div>
               <div className="p-6">
                 <div className="space-y-4">
-                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => {
-                    const adherenceRate = Math.floor(Math.random() * 40) + 60; // Mock data 60-100%
-                    return (
-                      <div key={day} className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{day}</span>
-                        <div className="flex items-center gap-3">
-                          <div className="w-32 bg-gray-200 dark:bg-slate-600 rounded-full h-2">
-                            <div 
-                              className={`h-2 rounded-full ${
-                                adherenceRate >= 80 ? 'bg-green-500' : 
-                                adherenceRate >= 60 ? 'bg-yellow-500' : 'bg-red-500'
-                              }`}
-                              style={{ width: `${adherenceRate}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-sm font-semibold text-gray-900 dark:text-white w-12">{adherenceRate}%</span>
-                        </div>
+                  <div className="flex items-center justify-center py-8">
+                    <div className="text-center">
+                      <div className={`text-5xl font-bold ${
+                        adherenceRate >= 80 ? 'text-green-500' : 
+                        adherenceRate >= 60 ? 'text-yellow-500' : 'text-red-500'
+                      }`}>
+                        {adherenceRate}%
                       </div>
-                    );
-                  })}
-                </div>
-                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-slate-600">
-                  <div className="text-center">
-                    <span className="text-lg font-bold text-green-600 dark:text-green-400">85%</span>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Weekly Average</p>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-2">Overall adherence rate</p>
+                      <p className={`text-xs mt-2 font-medium ${
+                        adherenceRate >= 80 ? 'text-green-600 dark:text-green-400' : 
+                        adherenceRate >= 60 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {adherenceRate >= 80 ? '✓ Excellent adherence' : 
+                         adherenceRate >= 60 ? '⚠ Good adherence' : '✗ Need improvement'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-slate-600 rounded-full h-3">
+                    <div 
+                      className={`h-3 rounded-full transition-all duration-300 ${
+                        adherenceRate >= 80 ? 'bg-green-500' : 
+                        adherenceRate >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                      }`}
+                      style={{ width: `${adherenceRate}%` }}
+                    ></div>
                   </div>
                 </div>
               </div>
@@ -663,42 +742,71 @@ export default function PatientDashboardPage() {
                 <p className="text-purple-700 dark:text-purple-300 text-sm mt-1">Recent vitals and symptoms</p>
               </div>
               <div className="p-6">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Blood Pressure</p>
-                      <p className="font-semibold text-gray-900 dark:text-white">120/80 mmHg</p>
-                    </div>
-                    <span className="text-green-500 text-xl">✓</span>
+                {vitals.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <p className="text-sm">No vital readings recorded yet</p>
+                    <p className="text-xs mt-1">Please contact your healthcare provider to record your vitals</p>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Heart Rate</p>
-                      <p className="font-semibold text-gray-900 dark:text-white">72 BPM</p>
-                    </div>
-                    <span className="text-green-500 text-xl">✓</span>
+                ) : (
+                  <div className="space-y-4">
+                    {vitals.map((vital) => {
+                      const getStatus = () => {
+                        const value = vital.value;
+                        const ranges: {[key: string]: {min: number; max: number}} = {
+                          blood_pressure: { min: 90, max: 120 },
+                          heart_rate: { min: 60, max: 100 },
+                          temperature: { min: 36.5, max: 37.5 },
+                          weight: { min: 50, max: 200 },
+                          oxygen_saturation: { min: 95, max: 100 },
+                          respiratory_rate: { min: 12, max: 20 },
+                          blood_glucose: { min: 80, max: 120 },
+                        };
+                        
+                        const range = ranges[vital.reading_type] || { min: 0, max: 999 };
+                        if (value >= range.min && value <= range.max) return { icon: '✓', color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-900/20' };
+                        if (Math.abs(value - range.max) < 10 || Math.abs(value - range.min) < 10) return { icon: '⚠', color: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-900/20' };
+                        return { icon: '✗', color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20' };
+                      };
+
+                      const status = getStatus();
+                      const displayName = vital.reading_type.replace('_', ' ').toUpperCase();
+                      const displayValue = vital.secondary_value 
+                        ? `${Math.round(vital.value)}/${Math.round(vital.secondary_value)}` 
+                        : Math.round(vital.value * 10) / 10;
+
+                      return (
+                        <div key={vital.id} className={`flex justify-between items-center p-3 rounded-lg ${status.bg}`}>
+                          <div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{displayName}</p>
+                            <p className="font-semibold text-gray-900 dark:text-white">{displayValue} {vital.unit}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                              {new Date(vital.recorded_at).toLocaleDateString()} {new Date(vital.recorded_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            </p>
+                          </div>
+                          <span className={`text-xl ${status.color}`}>{status.icon}</span>
+                        </div>
+                      );
+                    })}
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Pain Level</p>
-                      <p className="font-semibold text-gray-900 dark:text-white">3/10</p>
-                    </div>
-                    <span className="text-yellow-500 text-xl">⚠</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Last Symptom Report</p>
-                      <p className="font-semibold text-gray-900 dark:text-white">2 days ago</p>
-                    </div>
-                    <span className="text-blue-500 text-xl">ℹ</span>
+                )}
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-slate-600">
+                  <div className="text-center">
+                    {lastSymptomDate ? (
+                      <>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Last Symptom Report</p>
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white">{lastSymptomDate}</p>
+                      </>
+                    ) : (
+                      <p className="text-sm text-gray-600 dark:text-gray-400">No symptom reports yet</p>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Emergency Contact Section */}
-          <div className="mt-8 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-xl shadow-lg overflow-hidden border border-red-200 dark:border-red-800">
+          {/* Emergency Contact Section - moved to bottom */}
+          <div className="mt-6 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-xl shadow-lg overflow-hidden border border-red-200 dark:border-red-800">
             <div className="px-6 py-4 bg-gradient-to-r from-red-100 to-orange-100 dark:from-red-900/40 dark:to-orange-900/40 border-b border-red-200 dark:border-red-700">
               <h3 className="text-lg font-bold text-red-900 dark:text-red-100 flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -764,7 +872,7 @@ export default function PatientDashboardPage() {
               </div>
             </div>
           </div>
-        </>
+        </div>
         )}
 
         {/* Medications Tab */}

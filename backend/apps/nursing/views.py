@@ -80,13 +80,12 @@ class PatientAlertViewSet(viewsets.ModelViewSet):
     queryset = PatientAlert.objects.all().select_related(
         'patient', 'assigned_nurse__user', 'discharge_summary', 'appointment'
     )
-    permission_classes = [IsNurseOrAdmin]
+    permission_classes = [IsAuthenticated]  # Changed from IsNurseOrAdmin to allow patients
     
     def get_serializer_class(self):
         if self.action == 'create':
             return PatientAlertCreateSerializer
-        elif self.action == 'list':
-            return PatientAlertListSerializer
+        # Always use the full serializer for list and detail
         return PatientAlertSerializer
     
     def get_queryset(self):
@@ -308,7 +307,7 @@ class PatientAlertViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
     
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], url_path='dashboard')
     def dashboard(self, request):
         """Get dashboard statistics for alerts."""
         now = timezone.now()

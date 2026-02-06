@@ -21,7 +21,9 @@ DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 
 # Application definition
+# Note: Daphne must be listed before django.contrib.staticfiles for proper ASGI handling
 DJANGO_APPS = [
+    "daphne",  # ASGI server - MUST be first for WebSocket support
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -38,6 +40,7 @@ THIRD_PARTY_APPS = [
     "drf_spectacular",
     "django_celery_beat",
     "guardian",
+    "channels",  # WebSocket support for real-time chat
 ]
 
 LOCAL_APPS = [
@@ -53,6 +56,7 @@ LOCAL_APPS = [
     "apps.nursing",
     "apps.caregivers",
     "apps.vitals",
+    "apps.chat",  # Real-time chat system
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -87,6 +91,22 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "bicare360.wsgi.application"
+
+# ASGI Application (for WebSocket support via Django Channels)
+ASGI_APPLICATION = "bicare360.asgi.application"
+
+# Django Channels Configuration
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [env("REDIS_URL", default="redis://localhost:6379/1")],
+            # Connection pool settings for better performance
+            "capacity": 1500,  # Maximum number of messages to store
+            "expiry": 10,  # Message expiry time in seconds
+        },
+    },
+}
 
 # Database
 DATABASES = {

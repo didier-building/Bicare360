@@ -1,246 +1,149 @@
-# BiCare360 🏥
+# BiCare360 - Hybrid Home-Care Platform
 
-**Post-Discharge Healthcare Management System for Rwanda**
+[![Django](https://img.shields.io/badge/Django-4.2+-green.svg)](https://www.djangoproject.com/)
+[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
+[![React](https://img.shields.io/badge/React-18+-blue.svg)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5+-blue.svg)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[![Test Coverage](https://img.shields.io/badge/coverage-81.44%25-orange.svg)](WEEK_3_SUMMARY.md)
-[![Tests](https://img.shields.io/badge/tests-511%20passing-brightgreen.svg)](WEEK_3_SUMMARY.md)
-[![Authentication](https://img.shields.io/badge/authentication-JWT-blue.svg)](WEEK_3_SUMMARY.md)
-[![Django](https://img.shields.io/badge/Django-4.2.9-green.svg)](https://www.djangoproject.com/)
-[![DRF](https://img.shields.io/badge/DRF-3.14.0-red.svg)](https://www.django-rest-framework.org/)
-[![Python](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/)
-[![Week](https://img.shields.io/badge/week-3%2F32-blue.svg)](PROJECT_STATUS.md)
-[![Phase](https://img.shields.io/badge/phase-1%20Complete-brightgreen.svg)](PROJECT_STATUS.md)
-
-## 🎯 What We're Building
-
-BiCare360 is a **comprehensive healthcare management system** specifically designed for Rwanda's healthcare system. We're building a "Hybrid Care Bridge" that ensures patients never feel lost after hospital discharge by combining AI-powered automation with human care coordination.
-
-**Core Problem:** In Rwanda and across Africa, patients are often discharged from hospitals with minimal follow-up support, leading to medication non-adherence, missed appointments, and preventable readmissions.
-
-**Our Solution:** A complete care coordination platform that bridges the gap between hospital and home through:
-
-### The "Hybrid Care Bridge" Components:
-
-1. 🏥 **Bedside Hand-off** ✅ *Week 1 Complete*
-   - Hospital registration and EMR integration tracking
-   - Comprehensive discharge summary capture with ICD-10 coding
-   - Risk assessment (low/medium/high/critical)
-   - Bilingual instructions (English + Kinyarwanda)
-
-2. 👤 **Patient Management** ✅ *Phase 1 Basic Complete*
-   - Rwanda national ID validation (16 digits)
-   - Phone number validation (+250 format)
-   - Address with Rwanda administrative structure
-   - Emergency contacts
-
-3. 💊 **Medication Management** 🔄 *Week 2 - In Progress*
-   - Prescription tracking from discharge
-   - Adherence monitoring
-   - SMS reminders for medication schedules
-
-4. 💬 **24/7 Digital Companion** 📋 *Phases 2-3 Planned*
-   - SMS/WhatsApp integration (Africa's Talking)
-   - AI chatbot with RAG in Kinyarwanda
-   - Automated patient check-ins
-
-5. 👩‍⚕️ **Nurse Triage System** 📋 *Phase 4 Planned*
-   - Alert engine with 10-minute response SLA
-   - Nurse console dashboard
-   - Escalation workflows
-
-6. 🤝 **Abafasha Care Guides** 📋 *Phase 5 Planned*
-   - Mobile app for care coordinators
-   - In-person visit scheduling
-   - Patient feedback collection
-
-7. 📊 **Provider Dashboards** 📋 *Phases 6-8 Planned*
-   - Hospital performance analytics
-   - Insurance/RSSB integration
-   - Cost savings reporting
+**BiCare360** is a comprehensive continuity-of-care platform designed for Rwanda's healthcare ecosystem. It bridges the gap between hospital discharge and home care, enabling seamless coordination between healthcare providers, nurses, caregivers, and patients.
 
 ---
 
-## 📍 Current Development Stage
+## 🎯 Vision & Purpose
 
-**Timeline:** 32-week implementation (8 months)  
-**Current Progress:** Week 3 of 32 (9.375% complete)  
-**Current Phase:** Phase 1 - COMPLETE ✅ | Phase 2 - Ready (blocked on API credentials)  
-**Status:** Phase 1 100% Complete, All 511 tests passing
+Healthcare doesn't end at hospital discharge. BiCare360 ensures patients receive coordinated, continuous care through:
 
-### What's Been Built (Weeks 1-3):
-- ✅ Hospital registration system
-- ✅ Discharge summary capture with risk assessment  
-- ✅ Patient enrollment API with GDPR compliance
-- ✅ Medication catalog with 10 dosage forms
-- ✅ Prescription tracking linked to discharge
-- ✅ Medication adherence monitoring
-- ✅ Appointment scheduling with reminders
-- ✅ Consent management with audit trails
-- ✅ Message queue infrastructure (SMS/WhatsApp ready)
-- ✅ JWT authentication with 7 permission classes
-- ✅ 511 comprehensive tests (100% pass rate)
-- ✅ Django admin interfaces
-- ✅ API documentation (Swagger/ReDoc)
-
-### What's Next (Weeks 4+):
-- 📋 Week 4: Africa's Talking SMS/WhatsApp integration (🔴 BLOCKED - awaiting API credentials)
-- 📋 Week 5-6: AI chatbot and automation (Phase 3)
-- 📋 Week 7-8: Nurse dashboard and alerting (Phase 4)
+- 🏥 **Hospital Integration** - Automated discharge summary ingestion
+- 👨‍⚕️ **Nurse Triage System** - Intelligent alert routing and case management
+- 👵 **Home Caregiver Network** - "Abafasha" marketplace for professional home care
+- 📱 **Patient Portal** - Bilingual (English/Kinyarwanda) self-service platform
+- 💊 **Medication Management** - Prescription tracking and adherence monitoring
+- 📅 **Smart Scheduling** - Appointment management with SMS/WhatsApp reminders
+- 🔔 **Proactive Alerts** - Early detection of medication non-adherence and missed appointments
+- 🇷🇼 **Rwanda-First Design** - National ID integration, administrative structure support, local telecom integration
 
 ---
 
-## 📊 Current Status
+## 📋 Table of Contents
 
-### Phase 1: Foundation & Discharge Management (100% COMPLETE ✅)
-
-| Component | Status | Details |
-|-----------|--------|---------|
-| **Development Timeline** | Week 3 of 32 (9.375% complete) | On schedule |
-| **Phase 1 Completion** | ✅ 100% Complete | All deliverables met |
-| **Test Coverage** | 81.44% | 511 tests, 100% pass rate |
-| **Total Tests** | 511 passing ✅ | All test files updated |
-| **Code Quality** | Production-ready | JWT auth, GDPR compliant |
-| **Documentation** | Comprehensive | See WEEK_3_SUMMARY.md |
-| **Database Models** | 14 complete | All with proper relationships |
-| **API Endpoints** | 50+ complete | All authenticated |
-| **Authentication** | JWT ✅ | Token-based, 7 permission classes |
-
----
-
-## 🚀 Features
-
-### ✅ Week 1: Hospital & Discharge Management (COMPLETE)
-
-- **Hospital Registration**
-  - Rwanda location structure (province/district/sector)
-  - Hospital types (referral/district/health_center/clinic)
-  - EMR integration tracking (manual/API/HL7)
-  - Phone validation (+250 format)
-  - Status management (active/pilot/inactive)
-
-- **Discharge Summary Capture**
-  - Comprehensive discharge data with ICD-10 coding
-  - Auto-calculated: length_of_stay, days_since_discharge, is_high_risk
-  - Risk assessment (low/medium/high/critical)
-  - Bilingual: English + Kinyarwanda (instructions/warnings)
-  - Follow-up requirements tracking
-  - Provider information (attending physician, discharge nurse)
-
-- **Custom Endpoints**
-  - `/high_risk/` - High/critical risk patients
-  - `/recent/?days=7` - Recent discharges
-  - `/needs_follow_up/` - Requires follow-up
-  - `/{id}/risk_analysis/` - Detailed risk assessment
-
-- **Patient Management** (From Phase 1 Basic)
-  - Complete CRUD operations
-  - Rwanda 16-digit national ID validation
-  - +250 phone number format enforcement
-  - Multi-language support (Kinyarwanda/English/French)
-  - Address management with Rwanda admin structure
-  - Emergency contacts tracking
-
-### ✅ Week 2: Medication Management (COMPLETE)
-
-- **Medication Catalog**
-  - 10 dosage forms (tablet, capsule, syrup, injection, etc.)
-  - Generic and brand names
-  - Strength and manufacturer tracking
-  - Medical information (indications, contraindications, side effects)
-  - Prescription requirements
-  - Active/inactive status
-
-- **Prescription Tracking**
-  - Linked to discharge summaries and patients
-  - Dosage, frequency, route, duration
-  - Bilingual instructions (English + Kinyarwanda)
-  - Start/end dates with auto-calculated days remaining
-  - Refill management
-  - Computed properties: is_current, days_remaining
-
-- **Adherence Monitoring**
-  - Scheduled dose tracking
-  - Status tracking (scheduled/taken/missed/skipped/late)
-  - Timestamp when taken
-  - Reason tracking for missed doses
-  - Reminder system integration ready
-  - Computed properties: is_overdue, minutes_late
-
-- **Custom Endpoints**
-  - `/medications/active/` - Active medications only
-  - `/prescriptions/current/` - Current active prescriptions
-  - `/adherence/{id}/mark_taken/` - Mark dose as taken
-  - `/adherence/{id}/mark_missed/` - Mark dose as missed
-  - `/adherence/overdue/` - Get overdue doses
-  - `/adherence/stats/` - Adherence statistics
-
-### 🔄 Week 3-4: Appointments & Consent (Weeks 3-4 of Phase 1)
-- Week 3: Appointment scheduling with SMS reminders
-- Week 4: Consent management and data privacy
-
-### 📋 Phase 2: SMS/WhatsApp Messaging (Weeks 5-8)
-- Africa's Talking SMS integration
-- WhatsApp Business API
-- Kinyarwanda message templates
-- Automated adherence reminders
-- Two-way communication
-
-### 🤖 Phase 3: AI Chatbot with RAG (Weeks 9-12)
-- PGVector embeddings for medical knowledge
-- Kinyarwanda NLP support
-- Symptom checker with red flags
-- Context-aware responses
-- Automatic escalation to nurses
-
-### 👩‍⚕️ Phase 4: Nurse Triage System (Weeks 13-16)
-- Alert engine with risk scoring
-- 10-minute response SLA tracking
-- Nurse console dashboard
-- Patient communication tools
-- Escalation workflows
-
-### 🤝 Phase 5: Abafasha Care Guides (Weeks 17-20)
-- Care guide mobile app
-- Task assignment and tracking
-- In-person visit scheduling
-- Patient feedback collection
-- Performance metrics
-
-### 📊 Phase 6-8: Dashboards & Production (Weeks 21-32)
-- Hospital provider dashboards
-- Insurance/RSSB analytics
-- USSD fallback for feature phones
-- React Native patient app
-- Full production deployment
+- [System Architecture](#-system-architecture)
+- [Technology Stack](#-technology-stack)
+- [Features](#-features)
+- [Installation](#-installation)
+- [Configuration](#-configuration)
+- [API Documentation](#-api-documentation)
+- [Database Schema](#-database-schema)
+- [Development](#-development)
+- [Testing](#-testing)
+- [Deployment](#-deployment)
+- [Security](#-security)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ System Architecture
+
+### High-Level Architecture
 
 ```
-BiCare360/
-├── backend/                    # Django REST API
-│   ├── apps/
-│   │   ├── patients/          # Patient management ✅
-│   │   │   ├── models.py      # Patient, Address, EmergencyContact
-│   │   │   ├── serializers.py # 5 serializers (89% coverage)
-│   │   │   ├── views.py       # 3 ViewSets (100% coverage)
-│   │   │   └── tests/         # 131 tests passing
-│   │   └── enrollment/        # Discharge & hospital management ✅
-│   │       ├── models.py      # Hospital, DischargeSummary (98.67% coverage)
-│   │       ├── serializers.py # 4 serializers (95.65% coverage)
-│   │       ├── views.py       # 2 ViewSets (97.53% coverage)
-│   │       ├── admin.py       # Django admin (96.15% coverage)
-│   │       └── tests/         # 54 tests passing
-│   ├── bicare360/
-│   │   └── settings/          # Split settings (dev/test/prod)
-│   ├── requirements/          # Dependency management
-│   └── htmlcov/               # Coverage reports
-│
-├── frontend/                  # React admin dashboard (Weeks 27-32)
-├── mobile/                    # React Native app (Weeks 27-32)
-└── docs/                      # Project documentation
+┌─────────────────────────────────────────────────────────────────┐
+│                        FRONTEND LAYER                             │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐        │
+│  │  Admin   │  │  Nurse   │  │ Patient  │  │Caregiver │        │
+│  │Dashboard │  │Dashboard │  │  Portal  │  │  Portal  │        │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘        │
+│       │             │              │              │               │
+│       └─────────────┴──────────────┴──────────────┘               │
+│                         │                                          │
+│              React 18 + TypeScript + Vite                         │
+└─────────────────────────┼─────────────────────────────────────────┘
+                          │
+                   ┌──────▼───────┐
+                   │   REST API   │
+                   │  (DRF + JWT) │
+                   └──────┬───────┘
+                          │
+┌─────────────────────────┼─────────────────────────────────────────┐
+│                    BACKEND LAYER                                   │
+│  ┌────────────────┬────────────────┬────────────────┬───────────┐│
+│  │   Users &      │   Patient      │   Clinical     │ External  ││
+│  │   Auth         │   Management   │   Operations   │ Services  ││
+│  ├────────────────┼────────────────┼────────────────┼───────────┤│
+│  │ • users        │ • patients     │ • appointments │ • messaging│
+│  │ • authentication│ • enrollment  │ • medications  │ • consents││
+│  │ • core         │ • vitals       │ • nursing      │           ││
+│  │                │ • caregivers   │                │           ││
+│  └────────────────┴────────────────┴────────────────┴───────────┘│
+│                                                                    │
+│  Django 4.2 + DRF + Celery + Guardian                            │
+└────────────────────────────┬───────────────────────────────────────┘
+                            │
+┌───────────────────────────┼───────────────────────────────────────┐
+│                    DATA LAYER                                      │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐         │
+│  │PostgreSQL│  │  Redis   │  │  Celery  │  │   S3     │         │
+│  │ (Primary)│  │  (Cache) │  │  (Tasks) │  │ (Media)  │         │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘         │
+└────────────────────────────────────────────────────────────────────┘
+                            │
+┌───────────────────────────┼───────────────────────────────────────┐
+│                 EXTERNAL INTEGRATIONS                              │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
+│  │ Africa's Talking│  │  Hospital EMRs  │  │  DHIS2 / MOH    │  │
+│  │  (SMS/WhatsApp) │  │  (HL7/FHIR)     │  │  (Analytics)    │  │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘  │
+└────────────────────────────────────────────────────────────────────┘
+```
 
+### Application Structure
+
+```
+bicare360/
+├── backend/                      # Django Backend
+│   ├── apps/
+│   │   ├── users/               # User management & authentication
+│   │   ├── patients/            # Patient records & demographics
+│   │   ├── enrollment/          # Hospital integration & discharge summaries
+│   │   ├── medications/         # Medication catalog & prescriptions
+│   │   ├── appointments/        # Scheduling & reminders
+│   │   ├── nursing/             # Nurse triage & alert system
+│   │   ├── caregivers/          # Abafasha caregiver management
+│   │   ├── consents/            # GDPR compliance & privacy
+│   │   ├── messaging/           # SMS/Email/WhatsApp service
+│   │   ├── vitals/              # Health metrics tracking
+│   │   └── core/                # Shared utilities & permissions
+│   ├── bicare360/              # Project settings
+│   │   ├── settings/
+│   │   │   ├── base.py         # Shared settings
+│   │   │   ├── dev.py          # Development settings
+│   │   │   ├── prod.py         # Production settings
+│   │   │   └── test.py         # Testing settings
+│   │   ├── urls.py             # URL routing
+│   │   ├── celery.py           # Celery configuration
+│   │   └── wsgi.py             # WSGI entry point
+│   ├── requirements/
+│   │   ├── base.txt            # Core dependencies
+│   │   ├── dev.txt             # Development dependencies
+│   │   ├── prod.txt            # Production dependencies
+│   │   └── testing.txt         # Testing dependencies
+│   └── manage.py               # Django management script
+│
+└── frontend/                    # React Frontend
+    ├── src/
+    │   ├── pages/              # Route components
+    │   │   ├── admin/          # Admin dashboard
+    │   │   ├── nurse/          # Nurse triage interface
+    │   │   ├── patient/        # Patient portal
+    │   │   └── caregiver/      # Caregiver dashboard
+    │   ├── components/         # Reusable components
+    │   ├── api/                # API client & endpoints
+    │   ├── stores/             # Zustand state management
+    │   ├── contexts/           # React contexts
+    │   └── hooks/              # Custom React hooks
+    ├── public/                 # Static assets
+    └── package.json            # npm dependencies
 ```
 
 ---
@@ -248,257 +151,846 @@ BiCare360/
 ## 🛠️ Technology Stack
 
 ### Backend
-- **Framework:** Django 4.2.9
-- **API:** Django REST Framework 3.14.0
-- **Database:** PostgreSQL 15+ with PGVector extension
-- **Cache/Queue:** Redis 7+
-- **Task Queue:** Celery 5.3.6
-- **Authentication:** JWT (Simple JWT)
-- **Testing:** pytest 8.0.0, factory-boy, Faker
+- **Framework:** Django 4.2+
+- **API:** Django REST Framework 3.14+
+- **Authentication:** Simple JWT (JWT tokens)
+- **Database:** PostgreSQL 14+ (SQLite for development)
+- **Cache:** Redis 7+
+- **Task Queue:** Celery 5+ with Redis broker
+- **API Docs:** DRF Spectacular (OpenAPI 3.0)
+- **Permissions:** Django Guardian (object-level permissions)
+- **Integrations:** Africa's Talking (SMS/WhatsApp)
 
-### Frontend (Coming Soon)
-- React 18+
-- TypeScript
-- Tailwind CSS
-- React Query
+### Frontend
+- **Framework:** React 18+
+- **Language:** TypeScript 5+
+- **Build Tool:** Vite 5+
+- **State Management:** Zustand
+- **Routing:** React Router v6
+- **HTTP Client:** Axios
+- **UI Components:** Custom component library
+- **Forms:** React Hook Form
+- **Validation:** Zod
 
-### Mobile (Coming Soon)
-- React Native
-- Expo
-- TypeScript
-
-### DevOps
-- Docker & Docker Compose
-- GitHub Actions (CI/CD)
-- PostgreSQL
-- Redis
+### DevOps & Tools
+- **Version Control:** Git
+- **Containerization:** Docker + Docker Compose
+- **CI/CD:** GitHub Actions (planned)
+- **Monitoring:** Sentry (planned)
+- **Testing:** pytest (backend), Vitest (frontend)
 
 ---
 
-## 🚀 Quick Start
+## ✨ Features
+
+### 🏥 Hospital Integration
+- Automated discharge summary ingestion (manual, API, HL7)
+- Multi-hospital support with individual configurations
+- Comprehensive discharge data capture (diagnoses, procedures, medications, follow-up instructions)
+- Bilingual discharge instructions (English/Kinyarwanda)
+
+### 👨‍⚕️ Nurse Triage System
+- Intelligent alert engine with severity-based prioritization
+- SLA tracking (Critical: 10min, High: 30min, Medium: 2hrs, Low: 4hrs)
+- Automated nurse assignment based on workload
+- Dashboard with real-time metrics
+- Alert types: Missed medications, missed appointments, high-risk discharge, symptom reports
+
+### 👵 Caregiver Marketplace
+- Professional home caregiver ("Abafasha") profiles
+- License verification & background checks
+- Rating & review system
+- Service catalog (nursing care, companionship, personal care)
+- Availability management
+- Geolocation-based caregiver matching
+
+### 📱 Patient Portal
+- Bilingual interface (English/Kinyarwanda)
+- Secure authentication with JWT
+- Appointment viewing & requests
+- Medication tracking
+- Vital signs self-reporting
+- Health goal setting & progress tracking
+- Educational content access
+- Emergency contact management
+
+### 💊 Medication Management
+- Comprehensive medication catalog
+- Prescription tracking linked to discharge summaries
+- Medication adherence monitoring
+- Automated refill reminders
+- Side effect reporting
+- Drug interaction warnings
+
+### 📅 Appointment System
+- Flexible appointment types (follow-up, medication review, consultation, routine checkup)
+- Multi-channel reminders (SMS, WhatsApp, Email)
+- Appointment confirmation & cancellation
+- Home visit scheduling
+- Telemedicine support
+- Provider & department assignment
+
+### 🔔 Smart Alerts & Notifications
+- Proactive patient monitoring
+- Missed medication alerts
+- Missed appointment notifications
+- High-risk patient flagging
+- Symptom-based escalation
+- Multi-channel delivery (SMS, WhatsApp, Email)
+
+### 🔐 GDPR Compliance
+- Versioned consent management
+- Granular privacy preferences
+- Right to data portability (export endpoint)
+- Right to be forgotten (anonymization)
+- Audit trails for all consent changes
+- IP address logging
+
+### 📊 Analytics & Reporting
+- Patient enrollment statistics
+- Nurse workload metrics
+- Appointment adherence rates
+- Medication compliance tracking
+- Alert response time analysis
+- Caregiver performance metrics
+
+---
+
+## 📦 Installation
 
 ### Prerequisites
 
-- Python 3.13+
-- PostgreSQL 15+
-- Redis 7+
+- Python 3.10+
+- Node.js 18+
+- PostgreSQL 14+ (or SQLite for development)
+- Redis 7+ (for Celery)
 - Git
 
-### Installation
+### Backend Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/bicare360.git
+   cd bicare360/backend
+   ```
+
+2. **Create virtual environment**
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
+
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements/dev.txt
+   ```
+
+4. **Configure environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
+
+5. **Run migrations**
+   ```bash
+   python manage.py migrate
+   ```
+
+6. **Create superuser**
+   ```bash
+   python manage.py createsuperuser
+   ```
+
+7. **Load sample data (optional)**
+   ```bash
+   python create_hospital_sample_data.py
+   python create_patient_sample_data.py
+   python create_nursing_sample_data.py
+   ```
+
+8. **Start development server**
+   ```bash
+   python manage.py runserver
+   ```
+
+9. **Start Celery worker (separate terminal)**
+   ```bash
+   celery -A bicare360 worker -l info
+   ```
+
+10. **Start Celery beat (separate terminal)**
+    ```bash
+    celery -A bicare360 beat -l info
+    ```
+
+### Frontend Setup
+
+1. **Navigate to frontend directory**
+   ```bash
+   cd ../frontend
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Configure environment**
+   ```bash
+   cp .env.example .env
+   # Edit .env with backend API URL
+   ```
+
+4. **Start development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Access the application**
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:8000
+   - API Docs: http://localhost:8000/api/docs/
+   - Admin Panel: http://localhost:8000/admin/
+
+---
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+#### Backend (.env)
 
 ```bash
-# Clone the repository
-git clone https://github.com/didier-building/Bicare360.git
-cd Bicare360
+# Django Settings
+SECRET_KEY=your-secret-key-here
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
 
-# Set up backend
-cd backend
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/bicare360
+# Or for SQLite (development):
+# DATABASE_URL=sqlite:///db.sqlite3
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Redis
+REDIS_URL=redis://localhost:6379/0
 
-# Install dependencies
-pip install -r requirements/dev.txt
+# CORS
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
 
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your configuration
+# Africa's Talking
+AFRICASTALKING_USERNAME=your_username
+AFRICASTALKING_API_KEY=your_api_key
+AFRICASTALKING_SANDBOX=True
+AFRICASTALKING_FROM=BiCare360
+SMS_DEMO_MODE=True  # Set to False in production
 
-# Run migrations
-python manage.py migrate
+# Email
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=your-email@example.com
+EMAIL_HOST_PASSWORD=your-app-password
+DEFAULT_FROM_EMAIL=BiCare360 <noreply@bicare360.rw>
 
-# Run tests to verify setup
-pytest apps/patients/tests/ --cov=apps/patients
-
-# Start development server
-python manage.py runserver
+# JWT
+ACCESS_TOKEN_LIFETIME=3600  # 1 hour in seconds
+REFRESH_TOKEN_LIFETIME=604800  # 7 days in seconds
 ```
 
-### API Documentation
+#### Frontend (.env)
 
-Once the server is running, access the interactive API documentation:
+```bash
+VITE_API_BASE_URL=http://localhost:8000
+VITE_API_VERSION=v1
+```
+
+### Django Settings Files
+
+- **base.py** - Shared settings for all environments
+- **dev.py** - Development-specific settings (DEBUG=True, Django Debug Toolbar)
+- **prod.py** - Production settings (DEBUG=False, security headers, logging)
+- **test.py** - Testing configuration (in-memory database, no external calls)
+
+To use a specific settings file:
+```bash
+export DJANGO_SETTINGS_MODULE=bicare360.settings.dev
+# or
+python manage.py runserver --settings=bicare360.settings.prod
+```
+
+---
+
+## 📚 API Documentation
+
+### Interactive API Documentation
 
 - **Swagger UI:** http://localhost:8000/api/docs/
-- **ReDoc:** http://localhost:8000/api/redoc/
+- **ReDoc:** http://localhost:8000/api/redoc/ (if configured)
+- **OpenAPI Schema:** http://localhost:8000/api/schema/
+
+### Authentication
+
+All API endpoints require JWT authentication (except registration and login).
+
+**Obtain Token:**
+```http
+POST /api/token/
+Content-Type: application/json
+
+{
+  "username": "your_username",
+  "password": "your_password"
+}
+```
+
+**Response:**
+```json
+{
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGc..."
+}
+```
+
+**Use Token:**
+```http
+GET /api/v1/patients/
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGc...
+```
+
+### Core Endpoints
+
+#### Patients
+```
+GET     /api/v1/patients/                 # List patients
+POST    /api/v1/patients/                 # Create patient
+GET     /api/v1/patients/{id}/            # Get patient details
+PATCH   /api/v1/patients/{id}/            # Update patient
+GET     /api/v1/patients/me/              # Get current patient (JWT)
+PATCH   /api/v1/patients/me/              # Update current patient
+GET     /api/v1/patients/search/          # Advanced search
+GET     /api/v1/patients/stats/           # Statistics
+POST    /api/v1/patients/register/        # Self-registration
+POST    /api/v1/patients/login/           # Patient login
+```
+
+#### Appointments
+```
+GET     /api/v1/appointments/             # List appointments
+POST    /api/v1/appointments/             # Create appointment
+GET     /api/v1/appointments/{id}/        # Get appointment
+PATCH   /api/v1/appointments/{id}/        # Update appointment
+GET     /api/v1/appointments/upcoming/    # Upcoming appointments
+POST    /api/v1/appointments/{id}/confirm/  # Confirm
+POST    /api/v1/appointments/{id}/cancel/   # Cancel
+```
+
+#### Nursing Alerts
+```
+GET     /api/v1/nursing/alerts/           # List alerts
+POST    /api/v1/nursing/alerts/           # Create alert
+PATCH   /api/v1/nursing/alerts/{id}/assign/     # Assign to nurse
+PATCH   /api/v1/nursing/alerts/{id}/acknowledge/# Acknowledge
+PATCH   /api/v1/nursing/alerts/{id}/resolve/   # Resolve
+GET     /api/v1/nursing/dashboard/        # Dashboard stats
+```
+
+#### Medications
+```
+GET     /api/v1/medications/              # List medications
+POST    /api/v1/medications/              # Add medication
+GET     /api/v1/prescriptions/            # List prescriptions
+POST    /api/v1/prescriptions/            # Create prescription
+```
+
+#### Caregivers
+```
+GET     /api/v1/caregivers/               # List caregivers
+POST    /api/v1/caregivers/               # Register caregiver
+GET     /api/v1/caregivers/{id}/          # Get caregiver
+GET     /api/v1/caregivers/available/     # Available caregivers
+```
+
+#### Vitals
+```
+GET     /api/v1/patients/{id}/vitals/     # List vitals
+POST    /api/v1/patients/{id}/vitals/     # Record vitals
+GET     /api/v1/patients/{id}/health-goals/  # Health goals
+POST    /api/v1/patients/{id}/health-goals/  # Create goal
+```
+
+### Filtering, Searching & Pagination
+
+**Filtering:**
+```
+GET /api/v1/patients/?is_active=true&gender=M
+```
+
+**Searching:**
+```
+GET /api/v1/patients/?search=john
+```
+
+**Ordering:**
+```
+GET /api/v1/patients/?ordering=-enrolled_date
+```
+
+**Pagination:**
+```
+GET /api/v1/patients/?page=2&page_size=50
+```
+
+---
+
+## 🗄️ Database Schema
+
+### Core Models
+
+#### Patient
+- Demographics (name, DOB, gender, blood type)
+- Rwanda National ID (16 digits, unique)
+- Contact (phone, email, alt phone)
+- Address (province, district, sector, cell, village, GPS)
+- Emergency contacts
+- Language preference (Kinyarwanda, English, French)
+- SMS/WhatsApp preferences
+- User account link (for portal access)
+
+#### DischargeSummary
+- Hospital & patient references
+- Admission & discharge dates
+- Diagnoses (primary, secondary, ICD-10 codes)
+- Procedures performed
+- Treatment summary
+- Discharge condition & instructions
+- Diet instructions
+- Follow-up plan
+- Linked prescriptions
+
+#### Appointment
+- Patient & hospital references
+- Date/time
+- Type (follow-up, medication review, consultation, emergency, routine checkup)
+- Status (scheduled, confirmed, completed, cancelled, no_show, rescheduled)
+- Location type (hospital, home visit, telemedicine)
+- Provider & department
+- Reason & notes (bilingual)
+- Cancellation tracking
+
+#### PatientAlert
+- Patient reference
+- Alert type (missed medication, missed appointment, high-risk discharge, symptom report, readmission risk)
+- Severity (low, medium, high, critical)
+- Status (new, assigned, in_progress, resolved, escalated, closed)
+- Assigned nurse
+- SLA tracking (created, acknowledged, resolved times)
+- Related discharge summary or appointment
+
+#### Prescription
+- Patient & discharge summary
+- Medication reference
+- Dosage, frequency, route
+- Start & end dates
+- Duration & quantity
+- Refills allowed
+- Special instructions (bilingual)
+- Prescriber information
+
+#### Caregiver
+- Basic info (name, email, phone)
+- Professional info (profession, license, experience)
+- Location (province, district, sector)
+- Pricing (hourly rate)
+- Availability status
+- Rating & reviews
+- Verification status (background check)
+
+### Relationships
+
+```
+Patient (1) ──< (N) DischargeSummary
+Patient (1) ──< (N) Appointment
+Patient (1) ──< (N) PatientAlert
+Patient (1) ──< (N) Prescription
+Patient (1) ──< (N) Consent
+Patient (1) ──< (N) VitalReading
+Patient (1) ─── (1) PrivacyPreference
+Patient (1) ─── (1) Address
+
+DischargeSummary (1) ──< (N) Prescription
+DischargeSummary (1) ──< (N) Appointment (follow-ups)
+DischargeSummary (1) ──< (N) PatientAlert
+
+Hospital (1) ──< (N) DischargeSummary
+Hospital (1) ──< (N) Appointment
+
+NurseProfile (1) ──< (N) PatientAlert (assigned)
+NurseProfile (1) ──< (N) NursePatientAssignment
+```
+
+---
+
+## 🧪 Development
+
+### Code Style
+
+**Backend (Python):**
+- Follow PEP 8
+- Use Black formatter
+- Use isort for imports
+- Use flake8 for linting
+- Type hints encouraged
+
+**Frontend (TypeScript):**
+- ESLint configuration
+- Prettier formatting
+- Strict TypeScript mode
+- React best practices
+
+### Pre-commit Hooks
+
+Install pre-commit hooks:
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+`.pre-commit-config.yaml` includes:
+- Black formatting
+- isort import sorting
+- flake8 linting
+- Trailing whitespace removal
+- YAML validation
+
+### Database Migrations
+
+**Create migration:**
+```bash
+python manage.py makemigrations
+python manage.py makemigrations app_name  # For specific app
+```
+
+**Apply migrations:**
+```bash
+python manage.py migrate
+python manage.py migrate app_name  # For specific app
+```
+
+**Revert migration:**
+```bash
+python manage.py migrate app_name migration_name
+```
+
+### Django Management Commands
+
+**Create demo data:**
+```bash
+python create_hospital_sample_data.py
+python create_patient_sample_data.py
+python create_nursing_sample_data.py
+```
+
+**Create nurse user:**
+```bash
+python create_demo_nurse_user.py
+```
+
+**Django shell:**
+```bash
+python manage.py shell
+# or with IPython:
+python manage.py shell_plus
+```
 
 ---
 
 ## 🧪 Testing
 
-BiCare360 follows Test-Driven Development (TDD) with comprehensive test coverage.
+### Backend Testing
 
+**Run all tests:**
 ```bash
-# Run all tests
-pytest apps/patients/tests/ -v
-
-# Run with coverage report
-pytest apps/patients/tests/ --cov=apps/patients --cov-report=html
-
-# View coverage report
-open htmlcov/index.html
+pytest
 ```
 
-### Test Coverage Breakdown
+**Run specific app:**
+```bash
+pytest apps/patients/tests/
+```
 
-| Module | Coverage | Tests |
-|--------|----------|-------|
-| Models | 100% | 25 |
-| Views | 100% | 27 |
-| Serializers | 89.36% | 13 |
-| API Integration | 100% | 26 |
-| Edge Cases | 100% | 40 |
-| **Overall** | **96.42%** | **131** |
+**Run with coverage:**
+```bash
+pytest --cov=apps --cov-report=html
+```
 
-For detailed testing information, see [TESTING_GUIDE.md](backend/TESTING_GUIDE.md)
+**Run specific test:**
+```bash
+pytest apps/patients/tests/test_models.py::test_patient_creation
+```
 
----
+### Frontend Testing
 
-## 📖 Documentation
+**Run all tests:**
+```bash
+npm test
+```
 
-- **[Backend README](backend/README.md)** - Backend setup and API details
-- **[Testing Guide](backend/TESTING_GUIDE.md)** - Comprehensive testing documentation
-- **[Test Summary](backend/TEST_SUMMARY.md)** - Test execution results
-- **API Docs** - Interactive Swagger/ReDoc documentation
+**Run with coverage:**
+```bash
+npm run test:coverage
+```
 
----
+**Run specific test file:**
+```bash
+npm test -- PatientList.test.tsx
+```
 
-## 🇷🇼 Rwanda-Specific Features
+### Test Structure
 
-### National ID Validation
-- 16-digit format: `1234567890123456`
-- Unique constraint enforced
-- Regex validation
+**Backend:**
+```
+apps/app_name/tests/
+├── __init__.py
+├── test_models.py      # Model tests
+├── test_views.py       # View/API tests
+├── test_serializers.py # Serializer tests
+├── factories.py        # Factory Boy factories
+└── conftest.py         # Pytest fixtures
+```
 
-### Phone Number Format
-- Country code: +250 (Rwanda)
-- Format: `+250XXXXXXXXX` (13 characters total)
-- Supports SMS and WhatsApp
-
-### Administrative Structure
-Rwanda's 5-level hierarchy:
-1. **Province** (Intara) - 5 provinces
-2. **District** (Akarere) - 30 districts
-3. **Sector** (Umurenge) - 416 sectors
-4. **Cell** (Akagari) - 2,148 cells
-5. **Village** (Umudugudu) - 14,837 villages
-
-### Language Support
-- **Kinyarwanda (kin)** - Default, primary language
-- **English (eng)** - Official language
-- **French (fra)** - Official language
-
----
-
-## 🔒 Security Features
-
-- ✅ JWT authentication
-- ✅ CORS configuration
-- ✅ Environment-based secrets
-- ✅ Input validation and sanitization
-- ✅ SQL injection protection (Django ORM)
-- ✅ XSS protection
-- ✅ HTTPS enforcement (production)
-- ✅ Rate limiting (planned)
+**Frontend:**
+```
+src/components/ComponentName/
+├── ComponentName.tsx
+├── ComponentName.test.tsx
+└── ComponentName.stories.tsx  # Storybook (if using)
+```
 
 ---
 
-## 📈 Roadmap
+## 🚀 Deployment
 
-### Q1 2026
-- ✅ Phase 1: Patient Enrollment API (Complete)
-- 🔄 Phase 2: Care Plan Management (In Progress)
-- 📋 Phase 3: Triage & Assessment
+### Docker Deployment
 
-### Q2 2026
-- 📋 Phase 4: Messaging System
-- 📋 Phase 5: AI/RAG Integration
-- 📋 Phase 6: Frontend Development
+**Build images:**
+```bash
+docker-compose build
+```
 
-### Q3 2026
-- 📋 Mobile app development
-- 📋 Production deployment
-- 📋 User acceptance testing
+**Start services:**
+```bash
+docker-compose up -d
+```
 
-### Q4 2026
-- 📋 Public beta launch
-- 📋 Healthcare provider training
-- 📋 Nationwide rollout
+**Run migrations:**
+```bash
+docker-compose exec backend python manage.py migrate
+```
+
+**Create superuser:**
+```bash
+docker-compose exec backend python manage.py createsuperuser
+```
+
+**View logs:**
+```bash
+docker-compose logs -f backend
+docker-compose logs -f frontend
+docker-compose logs -f celery
+```
+
+### Production Checklist
+
+- [ ] Set `DEBUG=False` in production settings
+- [ ] Use strong `SECRET_KEY`
+- [ ] Configure PostgreSQL (not SQLite)
+- [ ] Set up Redis for caching and Celery
+- [ ] Configure HTTPS/SSL
+- [ ] Set proper `ALLOWED_HOSTS`
+- [ ] Configure CORS properly
+- [ ] Set up static file serving (Whitenoise or CDN)
+- [ ] Set up media file storage (S3 or similar)
+- [ ] Configure email backend (not console)
+- [ ] Set up SMS service (Africa's Talking with real API key)
+- [ ] Set `SMS_DEMO_MODE=False`
+- [ ] Configure logging (file + external service like Sentry)
+- [ ] Set up database backups
+- [ ] Configure rate limiting
+- [ ] Set up monitoring & alerting
+- [ ] Configure firewall rules
+- [ ] Set up CI/CD pipeline
+- [ ] Run security audit
+
+### Environment-Specific Settings
+
+**Development:**
+```bash
+export DJANGO_SETTINGS_MODULE=bicare360.settings.dev
+```
+
+**Production:**
+```bash
+export DJANGO_SETTINGS_MODULE=bicare360.settings.prod
+```
+
+**Testing:**
+```bash
+export DJANGO_SETTINGS_MODULE=bicare360.settings.test
+```
+
+---
+
+## 🔐 Security
+
+### Security Features
+
+- JWT authentication with token rotation
+- Token blacklisting on logout
+- Password hashing (Django's PBKDF2)
+- CORS configuration
+- CSRF protection (Django middleware)
+- SQL injection protection (Django ORM)
+- XSS protection (Django template escaping)
+- HTTPS enforcement (production)
+- Object-level permissions (Guardian)
+- Audit logging for sensitive operations
+- IP address logging for consents
+- GDPR compliance features
+
+### Security Best Practices
+
+1. **Never commit secrets** - Use environment variables
+2. **Keep dependencies updated** - Run `pip list --outdated` regularly
+3. **Use HTTPS** in production
+4. **Implement rate limiting** on authentication endpoints
+5. **Monitor for suspicious activity**
+6. **Regular security audits**
+7. **Input validation** on all user inputs
+8. **Output encoding** to prevent XSS
+9. **Parameterized queries** (Django ORM handles this)
+10. **Regular backups** with encryption
+
+### Known Security Issues (To Fix)
+
+1. **JWT Blacklist not enabled** - `rest_framework_simplejwt.token_blacklist` not in INSTALLED_APPS
+2. **No rate limiting** on authentication endpoints
+3. **Password validators** not used in user views
+4. **SMS_DEMO_MODE default is True** - Should be False in production
 
 ---
 
 ## 🤝 Contributing
 
-BiCare360 is currently in active development. Contributions are welcome!
+We welcome contributions! Please follow these guidelines:
 
-### Development Workflow
+### Getting Started
 
-1. **Follow TDD** - Write tests before implementation
-2. **Maintain Coverage** - Keep test coverage above 95%
-3. **Code Quality** - Follow Django/DRF best practices
-4. **Documentation** - Document all API endpoints
-5. **Rwanda Context** - Respect local healthcare practices
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes
+4. Write/update tests
+5. Ensure tests pass: `pytest` and `npm test`
+6. Commit your changes: `git commit -m 'Add amazing feature'`
+7. Push to the branch: `git push origin feature/amazing-feature`
+8. Open a Pull Request
 
-### Commit Message Convention
+### Code Review Process
 
-```
-feat: Add new feature
-fix: Bug fix
-docs: Documentation update
-test: Add or update tests
-refactor: Code refactoring
-chore: Maintenance tasks
-```
+1. All PRs require at least one review
+2. All tests must pass
+3. Code coverage should not decrease
+4. Follow existing code style
+5. Update documentation if needed
+6. Add changelog entry
 
----
+### Reporting Issues
 
-## 👥 Team
-
-**Project Lead:** Didier  
-**Development Team:** BiCare360 Engineering
+When reporting issues, please include:
+- Environment (OS, Python version, Node version)
+- Steps to reproduce
+- Expected vs actual behavior
+- Error messages/stack traces
+- Screenshots (if applicable)
 
 ---
 
 ## 📄 License
 
-Proprietary - BiCare360 Healthcare Platform
-
-© 2026 BiCare360. All rights reserved.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🌟 Acknowledgments
+## 👥 Team
+
+**Project Lead:** [Your Name]  
+**Backend Developer:** [Name]  
+**Frontend Developer:** [Name]  
+**DevOps Engineer:** [Name]
+
+---
+
+## 📞 Support
+
+- **Email:** support@bicare360.rw
+- **Documentation:** https://docs.bicare360.rw
+- **Issue Tracker:** https://github.com/yourusername/bicare360/issues
+
+---
+
+## 🙏 Acknowledgments
 
 - Rwanda Ministry of Health
-- Healthcare providers across Rwanda
-- Open-source Django and DRF communities
-- Contributors and testers
+- Participating hospitals and health centers
+- Africa's Talking for SMS/WhatsApp integration
+- Open-source community
 
 ---
 
-## 📞 Contact & Support
+## 📊 Project Status
 
-- **GitHub Issues:** [Report bugs or request features](https://github.com/didier-building/Bicare360/issues)
-- **Documentation:** [Full documentation](backend/README.md)
-- **Email:** support@bicare360.rw (coming soon)
+**Current Version:** 1.0.0-alpha  
+**Status:** Active Development  
+**Last Updated:** February 2026
+
+### Roadmap
+
+**v1.0 (Q1 2026) - MVP Launch**
+- ✅ Patient enrollment
+- ✅ Discharge summary management
+- ✅ Nurse triage system
+- ✅ Appointment scheduling
+- ✅ Medication tracking
+- ✅ Patient portal
+- ⏳ Caregiver marketplace
+- ⏳ SMS/WhatsApp integration
+
+**v1.1 (Q2 2026) - Enhanced Features**
+- Mobile apps (iOS/Android)
+- Telemedicine integration
+- Advanced analytics dashboard
+- Hospital EMR integrations
+- DHIS2 integration
+
+**v2.0 (Q3 2026) - Scale**
+- AI-powered risk prediction
+- Voice-based patient interaction (Kinyarwanda)
+- Offline-first mobile apps
+- Multi-country support
 
 ---
 
-## 🎯 Project Goals
+## 🌍 Rwanda-Specific Features
 
-BiCare360 aims to:
-
-1. **Improve Access** - Make healthcare accessible to all Rwandans
-2. **Enhance Quality** - Provide AI-powered clinical decision support
-3. **Reduce Wait Times** - Intelligent triage and appointment scheduling
-4. **Enable Communication** - Multi-channel patient-provider messaging
-5. **Support Languages** - Native Kinyarwanda alongside English and French
-6. **Ensure Privacy** - HIPAA-compliant data protection
-7. **Scale Nationally** - Support Rwanda's entire healthcare system
+- **National ID Validation:** 16-digit Rwanda National ID support
+- **Administrative Structure:** Province → District → Sector → Cell → Village
+- **Bilingual Support:** English and Kinyarwanda throughout
+- **Local Phone Format:** +250XXXXXXXXX validation
+- **Africa's Talking Integration:** SMS/WhatsApp via Rwandan telecoms
+- **CBHI Integration (Planned):** Community-Based Health Insurance
+- **MOH Reporting (Planned):** Ministry of Health data reporting
+- **DHIS2 Integration (Planned):** Health information system integration
 
 ---
 
-**Built with ❤️ for Rwanda's healthcare system**
-
-[![GitHub stars](https://img.shields.io/github/stars/didier-building/Bicare360?style=social)](https://github.com/didier-building/Bicare360)
-[![GitHub forks](https://img.shields.io/github/forks/didier-building/Bicare360?style=social)](https://github.com/didier-building/Bicare360/fork)
+**Built with ❤️ for Rwanda's Healthcare System**

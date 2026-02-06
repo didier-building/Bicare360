@@ -33,6 +33,8 @@ urlpatterns = [
     path("patients/register/", patient_register, name="patient-register"),
     path("patients/login/", patient_login, name="patient-login"),
     path("patients/appointments/request/", request_appointment, name="patient-appointment-request"),
+    # Add /patients/me/ endpoint
+    path("patients/me/", PatientViewSet.as_view({"get": "me", "patch": "me"}), name="patient-me"),
     # Router URLs
     path("", include(router.urls)),
     path("", include(patients_router.urls)),

@@ -59,6 +59,14 @@ const HealthProgressChartPage: React.FC = () => {
       return;
     }
 
+    // Only fetch /patients/me/ if user is a patient (has patient role)
+    const userRole = localStorage.getItem('user_role');
+    if (userRole !== 'patient') {
+      setError('Health progress is only available for patients.');
+      setIsLoadingPatientId(false);
+      return;
+    }
+
     const fetchPatientId = async () => {
       try {
         const response = await client.get('/v1/patients/me/');
@@ -75,7 +83,7 @@ const HealthProgressChartPage: React.FC = () => {
     fetchPatientId();
   }, [patientIdParam]);
 
-  // Fetch health summary - call hook unconditionally
+  // All hooks must be called before any return
   const { 
     data: healthSummary, 
     isLoading: summaryLoading, 
@@ -87,7 +95,6 @@ const HealthProgressChartPage: React.FC = () => {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Fetch vital trends - call hook unconditionally
   const { 
     data: vitalTrends, 
     isLoading: trendsLoading 
@@ -98,7 +105,6 @@ const HealthProgressChartPage: React.FC = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  // Fetch vital summary - call hook unconditionally
   const { 
     data: vitalSummary, 
     isLoading: vitalSummaryLoading 
@@ -109,7 +115,6 @@ const HealthProgressChartPage: React.FC = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  // Fetch health goals - call hook unconditionally
   const { 
     data: goals = [], 
     isLoading: goalsLoading 
@@ -120,7 +125,6 @@ const HealthProgressChartPage: React.FC = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  // Fetch vital alerts - call hook unconditionally
   const { 
     data: alerts, 
     isLoading: alertsLoading 
@@ -131,7 +135,6 @@ const HealthProgressChartPage: React.FC = () => {
     staleTime: 1000 * 60 * 2, // 2 minutes
   });
 
-  // Fetch recent vitals - call hook unconditionally
   const { 
     data: vitals = [], 
     isLoading: vitalsLoading 
@@ -142,11 +145,38 @@ const HealthProgressChartPage: React.FC = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  // Early return for loading/error states - AFTER all hooks
+  // Early returns for loading/error states (AFTER all hooks)
+  if (error) {
+    return (
+      <div className="p-8 text-center text-red-600 font-semibold">
+        {error}
+      </div>
+    );
+  }
   if (isLoadingPatientId) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-gray-600">Loading patient information...</div>
+      </div>
+    );
+  }
+  if (!patientId) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <p className="text-red-600 text-lg font-semibold">Patient ID not found</p>
+          <p className="text-gray-600 mt-2">{error || 'Please log in first'}</p>
+        </div>
+      </div>
+    );
+  }
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+  if (summaryError) {
+    return (
+      <div className="p-6 bg-red-50 border border-red-200 rounded-lg">
+        <p className="text-red-800">Error loading health progress data</p>
       </div>
     );
   }

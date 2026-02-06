@@ -9,10 +9,15 @@ django-cors-headers==4.3.1
 django-filter==24.1
 drf-nested-routers==0.93.5
 
-# Task Queue
+# Task Queue & Real-time
 celery==5.3.6
 redis==5.0.1
 django-celery-beat==2.5.0
+
+# WebSocket & Real-time Chat
+channels==4.0.0
+channels-redis==4.1.0
+daphne==4.0.0
 
 # SMS/WhatsApp Gateway
 africastalking==2.0.2
