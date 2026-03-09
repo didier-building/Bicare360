@@ -12,11 +12,11 @@ router = DefaultRouter()
 router.register(r'appointments', AppointmentViewSet, basename='appointment')
 router.register(r'appointment-reminders', AppointmentReminderViewSet, basename='appointmentreminder')
 
-# Patient appointments need their own route since they're nested
-appointment_router = DefaultRouter()
-appointment_router.register(r'my-appointments', PatientAppointmentManagementViewSet, basename='patient-appointment')
+# Patient-specific appointments - register with full path to avoid conflicts
+patient_router = DefaultRouter()
+patient_router.register(r'appointments/my-appointments', PatientAppointmentManagementViewSet, basename='patient-appointment')
 
 urlpatterns = [
-    path('appointments/', include(appointment_router.urls)),
+    path('', include(patient_router.urls)),  # Must come first (more specific)
     path('', include(router.urls)),
 ]

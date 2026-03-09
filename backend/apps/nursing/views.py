@@ -80,12 +80,15 @@ class PatientAlertViewSet(viewsets.ModelViewSet):
     queryset = PatientAlert.objects.all().select_related(
         'patient', 'assigned_nurse__user', 'discharge_summary', 'appointment'
     )
-    permission_classes = [IsAuthenticated]  # Changed from IsNurseOrAdmin to allow patients
+    permission_classes = [IsNurseOrAdmin]  # Only nurses and admins can access alert management
+    # Pagination enabled for standard DRF behavior
     
     def get_serializer_class(self):
         if self.action == 'create':
             return PatientAlertCreateSerializer
-        # Always use the full serializer for list and detail
+        elif self.action == 'list':
+            return PatientAlertListSerializer
+        # Use full serializer for detail/update/delete
         return PatientAlertSerializer
     
     def get_queryset(self):

@@ -151,7 +151,7 @@ export default function PatientDashboardPage() {
           const today = new Date();
           const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
           const adherenceResponse = await adherenceAPI.getAdherenceRecords({
-            patient_id: patientData.id,
+            patient: patientData.id,
             scheduled_date__gte: sevenDaysAgo.toISOString().split('T')[0],
             page_size: 1000
           });

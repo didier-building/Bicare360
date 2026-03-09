@@ -54,6 +54,21 @@ app.conf.beat_schedule = {
         "task": "apps.messaging.tasks.send_medication_reminder_emails",
         "schedule": crontab(hour=20, minute=0),  # Daily at 8:00 PM
     },
+    # NEW: Check medication adherence daily at 8 AM
+    "check-medication-adherence": {
+        "task": "apps.medications.tasks.check_medication_adherence",
+        "schedule": crontab(hour=8, minute=0),  # Daily at 8:00 AM
+    },
+    # NEW: Send appointment SMS reminders daily at 9 AM
+    "send-appointment-sms-reminders": {
+        "task": "apps.appointments.tasks.send_appointment_reminders",
+        "schedule": crontab(hour=9, minute=0),  # Daily at 9:00 AM
+    },
+    # NEW: Check for missed appointments every hour
+    "notify-missed-appointments": {
+        "task": "apps.appointments.tasks.notify_missed_appointments",
+        "schedule": crontab(minute=0),  # Every hour at :00
+    },
 }
 
 

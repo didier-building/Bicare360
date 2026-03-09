@@ -140,24 +140,6 @@ class PatientMedicationTrackerSerializer(serializers.ModelSerializer):
         return obj.patient.full_name if obj.patient else None
 
 
-class MedicationAdherenceSerializer(serializers.ModelSerializer):
-    """Serializer for medication adherence tracking"""
-    prescription_name = serializers.CharField(source='prescription.medication.name', read_only=True)
-    patient_name = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = MedicationAdherence
-        fields = [
-            'id', 'patient', 'patient_name', 'prescription', 'prescription_name',
-            'date', 'status', 'taken_time', 'notes', 
-            'reported_at', 'updated_at'
-        ]
-        read_only_fields = ['id', 'patient_name', 'prescription_name', 'reported_at', 'updated_at']
-    
-    def get_patient_name(self, obj):
-        return obj.patient.full_name if obj.patient else None
-
-
 class SymptomReportSerializer(serializers.ModelSerializer):
     """Serializer for patient symptom reports"""
     patient_name = serializers.SerializerMethodField()

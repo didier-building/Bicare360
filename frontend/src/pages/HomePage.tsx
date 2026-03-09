@@ -20,6 +20,8 @@ const HomePage: React.FC = () => {
         // Route based on user role
         if (user?.role === 'nurse' || user?.role === 'staff') {
           navigate('/dashboard', { replace: true });
+        } else if (user?.role === 'caregiver') {
+          navigate('/caregiver/dashboard', { replace: true });
         } else {
           navigate('/patient/dashboard', { replace: true });
         }

@@ -50,8 +50,13 @@ export interface AdherenceListParams {
   patient?: number;
   status?: string;
   scheduled_date?: string;
+  scheduled_date__gte?: string;  // Django filter: greater than or equal
+  scheduled_date__lte?: string;  // Django filter: less than or equal
+  scheduled_date__lt?: string;   // Django filter: less than
+  scheduled_date__gt?: string;   // Django filter: greater than
   page?: number;
   page_size?: number;
+  [key: string]: any;  // Allow additional Django filter parameters
 }
 
 export interface AdherenceListResponse {

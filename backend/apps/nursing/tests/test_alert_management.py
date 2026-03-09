@@ -86,7 +86,9 @@ class TestNurseAlertDashboardAPI(APITestCase):
         response = self.client.get('/api/v1/alerts/')
         
         assert response.status_code == status.HTTP_200_OK
-        alert = response.data[0]
+        assert 'results' in response.data
+        assert response.data['count'] > 0
+        alert = response.data['results'][0]
         assert 'id' in alert
         assert 'patient_name' in alert
         assert 'alert_type' in alert
@@ -107,7 +109,7 @@ class TestNurseAlertDashboardAPI(APITestCase):
         response = self.client.get('/api/v1/alerts/?status=new')
         
         assert response.status_code == status.HTTP_200_OK
-        for alert in response.data:
+        for alert in response.data['results']:
             assert alert['status'] == 'new'
     
     def test_filter_alerts_by_severity(self):
@@ -116,7 +118,7 @@ class TestNurseAlertDashboardAPI(APITestCase):
         response = self.client.get('/api/v1/alerts/?severity=critical')
         
         assert response.status_code == status.HTTP_200_OK
-        for alert in response.data:
+        for alert in response.data['results']:
             assert alert['severity'] == 'critical'
     
     def test_filter_alerts_by_type(self):
@@ -125,7 +127,7 @@ class TestNurseAlertDashboardAPI(APITestCase):
         response = self.client.get('/api/v1/alerts/?alert_type=missed_medication')
         
         assert response.status_code == status.HTTP_200_OK
-        for alert in response.data:
+        for alert in response.data['results']:
             assert alert['alert_type'] == 'missed_medication'
     
     def test_filter_alerts_by_patient(self):
@@ -134,7 +136,7 @@ class TestNurseAlertDashboardAPI(APITestCase):
         response = self.client.get(f'/api/v1/alerts/?patient_id={self.patient.id}')
         
         assert response.status_code == status.HTTP_200_OK
-        for alert in response.data:
+        for alert in response.data['results']:
             assert alert['patient_id'] == self.patient.id
     
     def test_combine_multiple_filters(self):
@@ -145,7 +147,7 @@ class TestNurseAlertDashboardAPI(APITestCase):
         )
         
         assert response.status_code == status.HTTP_200_OK
-        for alert in response.data:
+        for alert in response.data['results']:
             assert alert['status'] == 'new'
             assert alert['severity'] == 'high'
             assert alert['patient_id'] == self.patient.id
@@ -159,9 +161,9 @@ class TestNurseAlertDashboardAPI(APITestCase):
         assert response.status_code == status.HTTP_200_OK
         # Alerts should be sorted by severity first (model default), then created_at
         # Just verify we get a proper response with sorting applied
-        if len(response.data) > 0:
-            assert 'created_at' in response.data[0]
-            assert 'severity' in response.data[0]
+        if response.data['count'] > 0:
+            assert 'created_at' in response.data['results'][0]
+            assert 'severity' in response.data['results'][0]
     
     def test_critical_severity_alerts_come_first(self):
         """Test alerts are returned with severity levels visible"""
@@ -170,10 +172,10 @@ class TestNurseAlertDashboardAPI(APITestCase):
         
         assert response.status_code == status.HTTP_200_OK
         # Verify all severity levels are present in the response
-        severity_values = [alert['severity'] for alert in response.data]
+        severity_values = [alert['severity'] for alert in response.data['results']]
         # Model has default ordering by severity (with critical first due to the Meta ordering)
         # Just verify we have mixed severities
-        assert len(set(severity_values)) > 1 or len(response.data) <= 1
+        assert len(set(severity_values)) > 1 or len(response.data['results']) <= 1
     
     # ==================== GET ALERT DETAIL TESTS ====================
     def test_nurse_get_alert_detail(self):

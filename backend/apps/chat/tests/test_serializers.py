@@ -321,13 +321,12 @@ class ChatMessageSerializerTests(TestCase):
         """
         data = {
             "conversation": self.conversation.id,
-            "sender": self.caregiver_user.id,
             "content": "Reply message",
         }
 
         serializer = ChatMessageSerializer(data=data)
         self.assertTrue(serializer.is_valid(), serializer.errors)
-        message = serializer.save()
+        message = serializer.save(sender=self.caregiver_user)
 
         self.assertEqual("Reply message", message.content)
         self.assertEqual(self.caregiver_user, message.sender)

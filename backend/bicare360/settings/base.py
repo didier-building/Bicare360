@@ -18,7 +18,7 @@ SECRET_KEY = env("SECRET_KEY", default="django-insecure-change-this-in-productio
 
 DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1", "testserver"])
 
 # Application definition
 # Note: Daphne must be listed before django.contrib.staticfiles for proper ASGI handling
@@ -41,6 +41,7 @@ THIRD_PARTY_APPS = [
     "django_celery_beat",
     "guardian",
     "channels",  # WebSocket support for real-time chat
+    "django_ratelimit",  # API rate limiting for security
 ]
 
 LOCAL_APPS = [
@@ -120,6 +121,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {
+            "min_length": 12,  # Increased from default 8 for better security
+        },
     },
     {
         "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
@@ -198,7 +202,28 @@ CELERY_TIMEZONE = TIME_ZONE
 AFRICASTALKING_USERNAME = env("AFRICASTALKING_USERNAME", default="sandbox")
 AFRICASTALKING_API_KEY = env("AFRICASTALKING_API_KEY", default="")
 AFRICASTALKING_SANDBOX = env.bool("AFRICASTALKING_SANDBOX", default=True)
+
+# Security Settings (Week 2 - Security Hardening)
+# Cookie Security
+SESSION_COOKIE_SECURE = not DEBUG  # Use secure cookies in production
+SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookies
+SESSION_COOKIE_SAMESITE = "Lax"  # CSRF protection
+CSRF_COOKIE_SECURE = not DEBUG  # Use secure CSRF cookies in production
+CSRF_COOKIE_HTTPONLY = True  # Prevent JavaScript access to CSRF cookies
+CSRF_COOKIE_SAMESITE = "Lax"  # CSRF protection
+
+# Security Headers
+SECURE_BROWSER_XSS_FILTER = True  # Enable XSS filter
+SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent MIME sniffing
+X_FRAME_OPTIONS = "DENY"  # Prevent clickjacking
+
+# Rate Limiting Configuration
+RATELIMIT_ENABLE = True  # Enable rate limiting globally
+RATELIMIT_USE_CACHE = "default"  # Use default cache for rate limit storage
 AFRICASTALKING_FROM = env("AFRICASTALKING_FROM", default="BiCare360")  # SMS sender ID
+
+# Silence django-ratelimit cache warnings (Redis works fine, just not officially supported)
+SILENCED_SYSTEM_CHECKS = ["django_ratelimit.W001", "django_ratelimit.E003"]
 
 # SMS Demo Mode (use mock service when True or when API key is missing)
 SMS_DEMO_MODE = env.bool("SMS_DEMO_MODE", default=True)

@@ -60,12 +60,20 @@ class ConversationSerializer(serializers.ModelSerializer):
         ...     conversation = serializer.save()
     """
     
-    # Read-only computed fields
-    patient_name = serializers.SerializerMethodField()
-    caregiver_name = serializers.SerializerMethodField()
-    nurse_name = serializers.SerializerMethodField()
+    # Nested participant serializers (read-only for GET requests)
+    patient = serializers.SerializerMethodField()
+    caregiver = serializers.SerializerMethodField()
+    nurse = serializers.SerializerMethodField()
+    
+    # Writable fields for POST/PUT (use IDs)
+    patient_id = serializers.IntegerField(write_only=True, required=False, allow_null=True, source='patient')
+    caregiver_id = serializers.IntegerField(write_only=True, required=False, allow_null=True, source='caregiver')
+    nurse_id = serializers.IntegerField(write_only=True, required=False, allow_null=True, source='nurse')
+    
+    # Computed fields
     unread_count = serializers.SerializerMethodField()
     last_message = serializers.SerializerMethodField()
+    message_count = serializers.SerializerMethodField()
     
     class Meta:
         model = Conversation
@@ -74,11 +82,12 @@ class ConversationSerializer(serializers.ModelSerializer):
             "patient",
             "caregiver",
             "nurse",
-            "patient_name",
-            "caregiver_name",
-            "nurse_name",
+            "patient_id",
+            "caregiver_id",
+            "nurse_id",
             "unread_count",
             "last_message",
+            "message_count",
             "created_at",
             "updated_at",
         ]
@@ -86,54 +95,58 @@ class ConversationSerializer(serializers.ModelSerializer):
             "id",
             "created_at",
             "updated_at",
-            "patient_name",
-            "caregiver_name",
-            "nurse_name",
-            "unread_count",
-            "last_message",
         ]
     
-    def get_patient_name(self, obj):
-        """
-        Get patient's full name.
-        
-        Args:
-            obj (Conversation): Conversation instance
-            
-        Returns:
-            str: Patient full name or None
-        """
+    def get_patient(self, obj):
+        """Get patient participant with user details."""
         if obj.patient and obj.patient.user:
-            return obj.patient.user.get_full_name()
+            return {
+                "id": obj.patient.id,
+                "user": {
+                    "id": obj.patient.user.id,
+                    "email": obj.patient.user.email,
+                    "first_name": obj.patient.user.first_name,
+                    "last_name": obj.patient.user.last_name,
+                    "get_full_name": obj.patient.user.get_full_name(),
+                }
+            }
         return None
     
-    def get_caregiver_name(self, obj):
-        """
-        Get caregiver's full name.
-        
-        Args:
-            obj (Conversation): Conversation instance
-            
-        Returns:
-            str: Caregiver full name or None
-        """
+    def get_caregiver(self, obj):
+        """Get caregiver participant with user details."""
         if obj.caregiver and obj.caregiver.user:
-            return obj.caregiver.user.get_full_name()
+            return {
+                "id": obj.caregiver.id,
+                "user": {
+                    "id": obj.caregiver.user.id,
+                    "email": obj.caregiver.user.email,
+                    "first_name": obj.caregiver.user.first_name,
+                    "last_name": obj.caregiver.user.last_name,
+                    "get_full_name": obj.caregiver.user.get_full_name(),
+                },
+                "profession": obj.caregiver.profession,
+            }
         return None
     
-    def get_nurse_name(self, obj):
-        """
-        Get nurse's full name.
-        
-        Args:
-            obj (Conversation): Conversation instance
-            
-        Returns:
-            str: Nurse full name or None
-        """
+    def get_nurse(self, obj):
+        """Get nurse participant with user details."""
         if obj.nurse and obj.nurse.user:
-            return obj.nurse.user.get_full_name()
+            return {
+                "id": obj.nurse.id,
+                "user": {
+                    "id": obj.nurse.user.id,
+                    "email": obj.nurse.user.email,
+                    "first_name": obj.nurse.user.first_name,
+                    "last_name": obj.nurse.user.last_name,
+                    "get_full_name": obj.nurse.user.get_full_name(),
+                },
+                "specialization": obj.nurse.specialization,
+            }
         return None
+    
+    def get_message_count(self, obj):
+        """Get total message count."""
+        return obj.messages.filter(is_deleted=False).count()
     
     def get_unread_count(self, obj):
         """
@@ -145,7 +158,16 @@ class ConversationSerializer(serializers.ModelSerializer):
         Returns:
             int: Number of unread, non-deleted messages
         """
-        return obj.messages.filter(is_read=False, is_deleted=False).count()
+        # Get current user from request context
+        request = self.context.get('request')
+        if not request or not request.user:
+            return 0
+        
+        # Count messages not sent by current user and not read
+        return obj.messages.filter(
+            is_deleted=False,
+            is_read=False
+        ).exclude(sender=request.user).count()
     
     def get_last_message(self, obj):
         """
@@ -160,15 +182,27 @@ class ConversationSerializer(serializers.ModelSerializer):
         last_msg = (
             obj.messages.filter(is_deleted=False)
             .order_by("-created_at")
+            .select_related('sender')
             .first()
         )
         
         if last_msg:
             return {
-                "content": last_msg.content[:50] + "..." if len(last_msg.content) > 50 else last_msg.content,
-                "sender_name": last_msg.sender.get_full_name(),
-                "created_at": last_msg.created_at,
+                "id": str(last_msg.id),
+                "conversation": str(last_msg.conversation_id),
+                "sender": {
+                    "id": last_msg.sender.id,
+                    "email": last_msg.sender.email,
+                    "first_name": last_msg.sender.first_name,
+                    "last_name": last_msg.sender.last_name,
+                    "get_full_name": last_msg.sender.get_full_name(),
+                },
+                "content": last_msg.content,
                 "is_read": last_msg.is_read,
+                "read_at": last_msg.read_at,
+                "is_deleted": last_msg.is_deleted,
+                "created_at": last_msg.created_at,
+                "updated_at": last_msg.updated_at,
             }
         return None
     
@@ -252,8 +286,10 @@ class ChatMessageSerializer(serializers.ModelSerializer):
         ...     message = serializer.save()
     """
     
-    # Read-only computed fields
-    sender_name = serializers.SerializerMethodField()
+    # Nested sender object (read-only)
+    sender = serializers.SerializerMethodField()
+    
+    # Computed fields
     attachments = serializers.SerializerMethodField()
     
     class Meta:
@@ -262,7 +298,6 @@ class ChatMessageSerializer(serializers.ModelSerializer):
             "id",
             "conversation",
             "sender",
-            "sender_name",
             "content",
             "is_read",
             "read_at",
@@ -273,27 +308,31 @@ class ChatMessageSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "id",
-            "sender",  # Sender is set automatically from request.user
             "is_read",
             "read_at",
             "is_deleted",
             "created_at",
             "updated_at",
-            "sender_name",
             "attachments",
         ]
     
-    def get_sender_name(self, obj):
+    def get_sender(self, obj):
         """
-        Get sender's full name.
+        Get sender's full user data.
         
         Args:
             obj (ChatMessage): Message instance
             
         Returns:
-            str: Sender full name
+            dict: Sender user data
         """
-        return obj.sender.get_full_name()
+        return {
+            "id": obj.sender.id,
+            "email": obj.sender.email,
+            "first_name": obj.sender.first_name,
+            "last_name": obj.sender.last_name,
+            "get_full_name": obj.sender.get_full_name(),
+        }
     
     def get_attachments(self, obj):
         """

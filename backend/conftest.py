@@ -1,6 +1,13 @@
 """
 Pytest configuration and fixtures for bicare360 tests.
 """
+import os
+import django
+
+# Configure Django settings before any Django imports
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bicare360.settings.dev')
+django.setup()
+
 import pytest
 from datetime import time, date, timedelta
 from django.contrib.auth import get_user_model

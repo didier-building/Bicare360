@@ -145,15 +145,18 @@ class TestNursePatientAssignment:
         assert '->' in str(assignment)
 
     def test_assignment_ordering(self):
-        """Test that assignments are ordered by assigned_at."""
-        assignment1 = NursePatientAssignmentFactory()
-        assignment2 = NursePatientAssignmentFactory()
-        assignment3 = NursePatientAssignmentFactory()
+        """Test that assignments are ordered by priority then assigned_at."""
+        # Create assignments with different priorities to ensure stable ordering
+        assignment1 = NursePatientAssignmentFactory(priority=1)
+        assignment2 = NursePatientAssignmentFactory(priority=3)  # Highest priority
+        assignment3 = NursePatientAssignmentFactory(priority=2)
         
         assignments = NursePatientAssignment.objects.all()
-        # Should be ordered by -assigned_at (newest first)
+        # Should be ordered by -priority first (highest priority first)
         assert assignments.count() == 3
-        assert assignments[0].id == assignment3.id
+        assert assignments[0].id == assignment2.id  # priority=3
+        assert assignments[1].id == assignment3.id  # priority=2
+        assert assignments[2].id == assignment1.id  # priority=1
 
 
 @pytest.mark.django_db

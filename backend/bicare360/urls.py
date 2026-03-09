@@ -6,6 +6,12 @@ from django.urls import path, include
 from django.conf import settings
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework.routers import DefaultRouter
+from apps.nursing.views import PatientAlertViewSet
+
+# Create dedicated router for alerts at root API level (for test compatibility)
+alerts_router = DefaultRouter()
+alerts_router.register(r'alerts', PatientAlertViewSet, basename='alert')
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -15,22 +21,24 @@ urlpatterns = [
     # API endpoints
     path("api/v1/", include("apps.users.urls")),
     path("api/v1/", include("apps.patients.urls")),
+    path("api/v1/", include("apps.vitals.urls")),  # Direct vitals endpoints (daily goals)
     path("api/v1/", include("apps.enrollment.urls")),
     path("api/v1/", include("apps.medications.urls")),
     path("api/v1/", include("apps.appointments.urls")),
     path("api/v1/", include("apps.consents.urls")),
     path("api/v1/", include("apps.messaging.urls")),
-    path("api/v1/nursing/", include("apps.nursing.urls")),
-    path("api/v1/", include("apps.caregivers.urls")),
+    path("api/v1/", include(alerts_router.urls)),  # Alerts at /api/v1/alerts/ for dashboard
+    path("api/v1/nursing/", include("apps.nursing.urls")),  # Full nursing suite
+    path("api/v1/caregivers/", include("apps.caregivers.urls")),
     path("api/v1/chat/", include("apps.chat.urls")),  # Real-time chat endpoints
     # API Documentation
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
 ]
 
-# Debug Toolbar URLs (only in development)
-if settings.DEBUG:
-    import debug_toolbar
-    urlpatterns = [
-        path("__debug__/", include(debug_toolbar.urls)),
-    ] + urlpatterns
+# Debug Toolbar URLs (only in development) - Commented out, install with: uv add django-debug-toolbar
+# if settings.DEBUG:
+#     import debug_toolbar
+#     urlpatterns = [
+#         path("__debug__/", include(debug_toolbar.urls)),
+#     ] + urlpatterns

@@ -4,6 +4,7 @@ Views for appointments app.
 from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 
@@ -27,6 +28,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     """
     queryset = Appointment.objects.select_related('patient', 'hospital').all()
     permission_classes = [IsAuthenticatedUser]
+    pagination_class = PageNumberPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['status', 'appointment_type', 'patient', 'hospital', 'location_type']
     search_fields = ['patient__first_name', 'patient__last_name', 'provider_name', 'reason']

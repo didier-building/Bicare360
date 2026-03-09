@@ -4,6 +4,9 @@ from apps.caregivers.models import (
     Caregiver, CaregiverService, CaregiverCertification,
     CaregiverBooking, CaregiverReview
 )
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class CaregiverServiceSerializer(serializers.ModelSerializer):
@@ -79,3 +82,17 @@ class CaregiverReviewSerializer(serializers.ModelSerializer):
             'rating', 'title', 'comment', 'created_at'
         ]
         read_only_fields = ['patient', 'caregiver']
+
+
+class CaregiverAuthSerializer(serializers.ModelSerializer):
+    """Serializer for caregiver authentication response."""
+    full_name = serializers.ReadOnlyField()
+    
+    class Meta:
+        model = Caregiver
+        fields = [
+            'id', 'full_name', 'first_name', 'last_name', 'email', 'phone_number',
+            'profession', 'experience_years', 'province', 'district',
+            'availability_status', 'rating', 'total_reviews', 'is_verified',
+            'is_active'
+        ]

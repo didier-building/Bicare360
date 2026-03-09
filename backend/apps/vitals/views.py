@@ -9,12 +9,17 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
+from django_ratelimit.decorators import ratelimit
+from django.utils.decorators import method_decorator
 
-from apps.vitals.models import VitalReading, HealthGoal, HealthTrend
+from apps.vitals.models import VitalReading, HealthGoal, HealthTrend, DailyGoal, GoalProgress
 from apps.vitals.serializers import (
     VitalReadingSerializer,
     HealthGoalSerializer,
     HealthTrendSerializer,
+    DailyGoalSerializer,
+    GoalProgressSerializer,
+    GoalStatsSerializer,
 )
 from apps.patients.models import Patient
 
@@ -398,3 +403,186 @@ class HealthProgressViewSet(viewsets.ViewSet):
         ).order_by("-period_end")[:10]
 
         return Response(HealthTrendSerializer(trends, many=True).data)
+
+
+class DailyGoalViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Daily Goals (Phase 1B - Daily Goals System).
+    
+    Provides CRUD operations for patient daily goals and custom actions:
+    - tick: Mark goal as complete
+    - untick: Mark goal as incomplete
+    - stats: Get goal statistics (streak, completion rate)
+    """
+    
+    serializer_class = DailyGoalSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["category", "is_completed", "is_recurring"]
+    
+    def get_queryset(self):
+        """Get daily goals for the authenticated patient."""
+        # Ensure user is a patient
+        if not hasattr(self.request.user, "patient"):
+            return DailyGoal.objects.none()
+        
+        patient = self.request.user.patient
+        queryset = DailyGoal.objects.filter(patient=patient)
+        
+        # Filter by category if provided
+        category = self.request.query_params.get("category")
+        if category:
+            queryset = queryset.filter(category=category)
+        
+        # Filter for today's goals
+        is_today = self.request.query_params.get("today")
+        if is_today and is_today.lower() == "true":
+            queryset = DailyGoal.get_today_goals(patient)
+        
+        return queryset.order_by("-created_at")
+    
+    @method_decorator(ratelimit(key='user', rate='10/m', method='POST'))
+    def create(self, request, *args, **kwargs):
+        """Create a daily goal (rate limited: 10 per minute)."""
+        return super().create(request, *args, **kwargs)
+    
+    def perform_create(self, serializer):
+        """Create a daily goal for the authenticated patient."""
+        patient = self.request.user.patient
+        serializer.save(patient=patient)
+    
+    @method_decorator(ratelimit(key='user', rate='60/m', method='POST'))
+    @action(detail=True, methods=["post"])
+    def tick(self, request, pk=None):
+        """Mark a goal as complete (rate limited: 60 per minute)."""
+        goal = self.get_object()
+        goal.tick()
+        
+        # Create progress record for today
+        from django.utils import timezone
+        today = timezone.now().date()
+        progress, created = GoalProgress.objects.get_or_create(
+            goal=goal,
+            date=today,
+            defaults={
+                "completed": True,
+                "actual_value": goal.target_value,
+            }
+        )
+        if not created:
+            progress.completed = True
+            progress.actual_value = goal.target_value
+            progress.save()
+        
+        serializer = self.get_serializer(goal)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    @method_decorator(ratelimit(key='user', rate='60/m', method='POST'))
+    @action(detail=True, methods=["post"])
+    def untick(self, request, pk=None):
+        """Mark a goal as incomplete (rate limited: 60 per minute)."""
+        goal = self.get_object()
+        goal.untick()
+        
+        # Update progress record for today
+        from django.utils import timezone
+        today = timezone.now().date()
+        try:
+            progress = GoalProgress.objects.get(goal=goal, date=today)
+            progress.completed = False
+            progress.save()
+        except GoalProgress.DoesNotExist:
+            pass  # No progress record to update
+        
+        serializer = self.get_serializer(goal)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=["get"])
+    def stats(self, request, pk=None):
+        """Get goal statistics (streak, completion rate)."""
+        goal = self.get_object()
+        
+        streak = GoalProgress.calculate_streak(goal)
+        completion_rate = GoalProgress.get_completion_rate(goal, days=7)
+        
+        # Get total completions
+        total_completions = GoalProgress.objects.filter(
+            goal=goal,
+            completed=True
+        ).count()
+        
+        # Get last completed date
+        last_progress = GoalProgress.objects.filter(
+            goal=goal,
+            completed=True
+        ).order_by("-date").first()
+        
+        stats_data = {
+            "streak": streak,
+            "completion_rate": completion_rate,
+            "total_completions": total_completions,
+            "last_completed": last_progress.date if last_progress else None,
+        }
+        
+        serializer = GoalStatsSerializer(stats_data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=["get"])
+    def analytics(self, request):
+        """Get overall goals analytics for the patient."""
+        patient = request.user.patient
+        goals = DailyGoal.objects.filter(patient=patient)
+        
+        total_goals = goals.count()
+        completed_today = goals.filter(is_completed=True).count()
+        
+        # Calculate weekly completion rate across all goals
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        today = timezone.now().date()
+        week_ago = today - timedelta(days=7)
+        
+        all_progress = GoalProgress.objects.filter(
+            goal__patient=patient,
+            date__gte=week_ago,
+            date__lte=today
+        )
+        
+        total_expected = total_goals * 7  # 7 days
+        total_completed = all_progress.filter(completed=True).count()
+        
+        completion_rate = (
+            round((total_completed / total_expected) * 100, 1)
+            if total_expected > 0
+            else 0.0
+        )
+        
+        # Get most completed category
+        from django.db.models import Count
+        category_stats = (
+            GoalProgress.objects.filter(
+                goal__patient=patient,
+                completed=True
+            )
+            .values("goal__category")
+            .annotate(count=Count("id"))
+            .order_by("-count")
+            .first()
+        )
+        
+        return Response({
+            "total_goals": total_goals,
+            "completed_today": completed_today,
+            "completion_percentage_today": (
+                round((completed_today / total_goals) * 100, 1)
+                if total_goals > 0
+                else 0.0
+            ),
+            "weekly_completion_rate": completion_rate,
+            "most_completed_category": (
+                category_stats["goal__category"]
+                if category_stats
+                else None
+            ),
+        }, status=status.HTTP_200_OK)

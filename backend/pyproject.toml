@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "africastalking>=2.0.2",
     "celery>=5.6.2",
     "channels==4.0.0",
     "channels-redis==4.1.0",
@@ -15,13 +16,29 @@ dependencies = [
     "django-environ>=0.12.0",
     "django-extensions>=4.1",
     "django-filter>=25.2",
+    "django-guardian==2.4.0",
+    "django-ratelimit>=4.1.0",
     "djangorestframework>=3.16.1",
     "djangorestframework-simplejwt>=5.5.1",
+    "drf-nested-routers>=0.95.0",
     "drf-spectacular>=0.29.0",
     "environ>=1.0",
+    "factory-boy>=3.3.3",
     "faker>=40.1.2",
     "guardian>=0.2.3",
     "pillow>=12.1.0",
+    "pytest>=9.0.2",
+    "pytest-asyncio>=0.23.3",
+    "pytest-cov>=7.0.0",
+    "pytest-django>=4.12.0",
     "redis>=7.1.0",
     "rest-framework-simplejwt>=0.0.2",
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "bicare360.settings.dev"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+asyncio_mode = "auto"
+markers = [
+    "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
 ]

@@ -54,10 +54,28 @@ class TestCaregiverModel:
 @pytest.mark.django_db
 class TestCaregiverBooking:
     
-    def test_create_booking(self, patient_factory, caregiver_factory):
+    def test_create_booking(self, patient_factory):
         """Test creating a caregiver booking."""
+        from apps.caregivers.models import Caregiver
+        
+        # Create patient using factory
         patient = patient_factory()
-        caregiver = caregiver_factory()
+        
+        # Create caregiver directly
+        caregiver = Caregiver.objects.create(
+            first_name='Test',
+            last_name='Caregiver',
+            email='caregiver@example.com',
+            phone_number='+250781234567',
+            profession='registered_nurse',
+            experience_years=5,
+            bio='Experienced caregiver',
+            province='Kigali',
+            district='Gasabo',
+            hourly_rate=45.00,
+            availability_status='available',
+            is_active=True,
+        )
         
         booking = CaregiverBooking.objects.create(
             patient=patient,

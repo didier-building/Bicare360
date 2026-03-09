@@ -78,15 +78,15 @@ class ConversationViewSet(viewsets.ModelViewSet):
         # User could be patient, caregiver, or nurse
         query = Q()
         
-        # Check if user has patient profile
-        if hasattr(user, "patient_profile"):
+        # Check if user has patient profile (related_name="patient")
+        if hasattr(user, "patient"):
             query |= Q(patient__user=user)
         
-        # Check if user has caregiver profile
+        # Check if user has caregiver profile (related_name="caregiver_profile")
         if hasattr(user, "caregiver_profile"):
             query |= Q(caregiver__user=user)
         
-        # Check if user has nurse profile
+        # Check if user has nurse profile (related_name="nurse_profile")
         if hasattr(user, "nurse_profile"):
             query |= Q(nurse__user=user)
         
@@ -167,12 +167,15 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         # Build filter for user's conversations
         conversation_query = Q()
         
-        if hasattr(user, "patient_profile"):
+        # Check for patient profile (related_name="patient")
+        if hasattr(user, "patient"):
             conversation_query |= Q(conversation__patient__user=user)
         
+        # Check for caregiver profile (related_name="caregiver_profile")
         if hasattr(user, "caregiver_profile"):
             conversation_query |= Q(conversation__caregiver__user=user)
         
+        # Check for nurse profile (related_name="nurse_profile")
         if hasattr(user, "nurse_profile"):
             conversation_query |= Q(conversation__nurse__user=user)
         
@@ -213,12 +216,15 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         user = self.request.user
         is_participant = False
         
-        if hasattr(user, "patient_profile") and conversation.patient:
+        # Check patient participation (related_name="patient")
+        if hasattr(user, "patient") and conversation.patient:
             is_participant = conversation.patient.user == user
         
+        # Check caregiver participation (related_name="caregiver_profile")
         if not is_participant and hasattr(user, "caregiver_profile") and conversation.caregiver:
             is_participant = conversation.caregiver.user == user
         
+        # Check nurse participation (related_name="nurse_profile")
         if not is_participant and hasattr(user, "nurse_profile") and conversation.nurse:
             is_participant = conversation.nurse.user == user
         

@@ -170,6 +170,10 @@ const HealthProgressChartPage: React.FC = () => {
       </div>
     );
   }
+
+  // Combined loading state check
+  const isLoading = summaryLoading || trendsLoading || vitalSummaryLoading || goalsLoading || alertsLoading || vitalsLoading;
+  
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -190,12 +194,6 @@ const HealthProgressChartPage: React.FC = () => {
         </div>
       </div>
     );
-  }
-
-  const isLoading = summaryLoading || trendsLoading || vitalSummaryLoading || goalsLoading || alertsLoading || vitalsLoading;
-
-  if (isLoading) {
-    return <LoadingSpinner />;
   }
 
   if (summaryError) {

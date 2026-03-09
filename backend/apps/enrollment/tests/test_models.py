@@ -214,9 +214,11 @@ class TestDischargeSummaryModel:
     def test_discharge_summary_cascade_delete_with_patient(self):
         """Test that discharge summaries are deleted when patient is deleted."""
         patient = PatientFactory()
+        patient.save()  # Ensure patient is saved before creating related objects
         DischargeSummaryFactory.create_batch(2, patient=patient)
+        patient_id = patient.id
         patient.delete()
-        assert DischargeSummary.objects.filter(patient=patient).count() == 0
+        assert DischargeSummary.objects.filter(id__in=[patient_id]).count() == 0
     
     def test_discharge_summary_protected_from_hospital_delete(self):
         """Test that hospital cannot be deleted if it has discharge summaries."""

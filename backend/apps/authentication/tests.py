@@ -213,9 +213,9 @@ class TestTokenSecurity:
         refresh = RefreshToken.for_user(user)
         access_token = refresh.access_token
         
-        # Verify token contains user_id
+        # Verify token contains user_id (JWT stores it as string)
         assert "user_id" in access_token
-        assert access_token["user_id"] == user.id
+        assert str(access_token["user_id"]) == str(user.id)
 
     def test_refresh_token_rotation(self):
         """Test that refresh token rotation works."""
