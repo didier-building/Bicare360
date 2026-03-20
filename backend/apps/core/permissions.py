@@ -202,8 +202,16 @@ class IsNurseOrAdmin(permissions.BasePermission):
             return False
         
         # Allow admins
-        if request.user.is_staff:
+        if request.user.is_staff or request.user.is_superuser:
             return True
         
-        # Allow nurses
-        return hasattr(request.user, 'nurse_profile')
+        # Allow nurses (check for nurse_profile)
+        try:
+            # Access the nurse_profile to trigger DoesNotExist if it doesn't exist
+            return request.user.nurse_profile is not None
+        except AttributeError:
+            # No nurse_profile attribute or related_name not configured
+            return False
+        except Exception:
+            # Any other exception (like DoesNotExist)
+            return False

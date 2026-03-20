@@ -16,7 +16,6 @@ Date: February 2026
 
 import os
 
-from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.security.websocket import AllowedHostsOriginValidator
 from django.core.asgi import get_asgi_application
@@ -31,6 +30,7 @@ django_asgi_app = get_asgi_application()
 # Import WebSocket routing after Django initialization
 # This must happen after get_asgi_application() to avoid AppRegistryNotReady error
 from apps.chat import routing as chat_routing
+from apps.chat.middleware import JWTAuthMiddlewareStack
 
 # ASGI application configuration
 # Routes connections based on protocol type (http vs websocket)
@@ -41,7 +41,7 @@ application = ProtocolTypeRouter(
         
         # WebSocket chat application with authentication and security
         "websocket": AllowedHostsOriginValidator(  # Validate origin header
-            AuthMiddlewareStack(  # Add user authentication to WebSocket scope
+            JWTAuthMiddlewareStack(  # Add JWT auth from token query param
                 URLRouter(
                     chat_routing.websocket_urlpatterns  # Chat WebSocket routes
                 )

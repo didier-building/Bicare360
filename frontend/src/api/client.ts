@@ -7,7 +7,7 @@ const client = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  timeout: 10000, // 10 seconds
 });
 
 // Request interceptor - Add JWT token to requests
@@ -17,11 +17,9 @@ client.interceptors.request.use(
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    console.log(`📤 Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, config.params || config.data || '');
     return config;
   },
   (error) => {
-    console.error('❌ Request Error:', error);
     return Promise.reject(error);
   }
 );
@@ -29,18 +27,9 @@ client.interceptors.request.use(
 // Response interceptor - Handle 401 and token refresh
 client.interceptors.response.use(
   (response) => {
-    console.log(`📥 Response: ${response.status} ${response.config.method?.toUpperCase()} ${response.config.url}`);
     return response;
   },
   async (error: AxiosError) => {
-    console.error('❌ Response Error:', {
-      status: error.response?.status,
-      url: error.config?.url,
-      method: error.config?.method,
-      message: error.message,
-      data: error.response?.data
-    });
-
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && originalRequest && !(originalRequest as any)._retry) {
@@ -49,12 +38,10 @@ client.interceptors.response.use(
       const refreshToken = localStorage.getItem('refresh_token');
       if (refreshToken) {
         try {
-          console.log('🔄 Refreshing access token...');
           const { data } = await axios.post(`${API_URL}/token/refresh/`, {
             refresh: refreshToken,
           });
           localStorage.setItem('access_token', data.access);
-          console.log('✅ Token refreshed successfully');
           
           if (originalRequest.headers) {
             originalRequest.headers.Authorization = `Bearer ${data.access}`;
@@ -63,7 +50,6 @@ client.interceptors.response.use(
           return client(originalRequest);
         } catch (refreshError) {
           // Refresh failed - clear tokens and redirect to login
-          console.error('❌ Token refresh failed, redirecting to login');
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
           window.location.href = '/login';
@@ -71,7 +57,6 @@ client.interceptors.response.use(
         }
       } else {
         // No refresh token - redirect to login
-        console.warn('⚠️ No refresh token found, redirecting to login');
         window.location.href = '/login';
       }
     }

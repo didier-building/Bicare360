@@ -36,6 +36,10 @@ export const useAuthStore = create<AuthState>((set) => ({
       localStorage.setItem('refresh_token', tokens.refresh);
 
       const user = await authAPI.getCurrentUser();
+      // Store user role in localStorage for routing utilities
+      if (user.role) {
+        localStorage.setItem('user_role', user.role);
+      }
       set({ user, isAuthenticated: true, isLoading: false });
     } catch (error: any) {
       console.error('Login error:', error.response?.data);
@@ -63,6 +67,11 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: () => {
     authAPI.logout();
+    // Clear all localStorage except theme
+    const theme = localStorage.getItem('theme');
+    localStorage.clear();
+    if (theme) localStorage.setItem('theme', theme);
+    sessionStorage.clear();
     set({ user: null, isAuthenticated: false });
   },
 
@@ -75,11 +84,16 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     try {
       const user = await authAPI.getCurrentUser();
+      // Store user role in localStorage for routing utilities
+      if (user.role) {
+        localStorage.setItem('user_role', user.role);
+      }
       set({ user, isAuthenticated: true });
     } catch (error) {
       set({ isAuthenticated: false, user: null });
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
+      localStorage.removeItem('user_role');
     }
   },
 

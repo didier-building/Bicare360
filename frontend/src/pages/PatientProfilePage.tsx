@@ -89,7 +89,11 @@ export default function PatientProfilePage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate('/patient/dashboard')}
+            onClick={() => {
+              const role = localStorage.getItem('user_role');
+              const dashboardRoute = role?.toLowerCase() === 'patient' ? '/patient/dashboard' : '/dashboard';
+              navigate(dashboardRoute);
+            }}
             className="flex items-center gap-2 text-teal-600 dark:text-teal-400 hover:text-teal-700"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

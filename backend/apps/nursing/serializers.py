@@ -45,23 +45,63 @@ class NurseProfileSerializer(serializers.ModelSerializer):
 
 class PatientAlertListSerializer(serializers.ModelSerializer):
     """Simplified serializer for alert list views."""
-    patient_name = serializers.SerializerMethodField()
-    patient_id = serializers.PrimaryKeyRelatedField(
-        source='patient',
-        read_only=True
-    )
+    patient = serializers.SerializerMethodField()
+    assigned_nurse = serializers.SerializerMethodField()
     
     class Meta:
         model = PatientAlert
         fields = [
-            'id', 'patient_id', 'patient_name', 'alert_type', 'severity',
-            'title', 'status', 'created_at', 'assigned_at', 'sla_deadline',
-            'is_overdue'
+            'id', 'patient', 'alert_type', 'severity', 'title', 'description',
+            'status', 'assigned_nurse', 'created_at', 'assigned_at', 
+            'acknowledged_at', 'resolved_at', 'sla_deadline', 'is_overdue'
         ]
         read_only_fields = fields
     
-    def get_patient_name(self, obj):
-        return obj.patient.full_name if obj.patient else None
+    def get_patient(self, obj):
+        """Return basic patient info."""
+        if not obj.patient:
+            return None
+        if not obj.patient.user:
+            return {
+                'id': obj.patient.id,
+                'first_name': obj.patient.first_name or 'Unknown',
+                'last_name': obj.patient.last_name or 'Patient',
+                'medical_record_number': obj.patient.national_id or f'PAT{obj.patient.id}',
+            }
+        return {
+            'id': obj.patient.id,
+            'first_name': obj.patient.user.first_name or obj.patient.first_name or 'Unknown',
+            'last_name': obj.patient.user.last_name or obj.patient.last_name or 'Patient',
+            'medical_record_number': obj.patient.national_id or f'PAT{obj.patient.id}',
+        }
+    
+    def get_assigned_nurse(self, obj):
+        """Return basic assigned nurse info."""
+        if not obj.assigned_nurse:
+            return None
+        if not obj.assigned_nurse.user:
+            return {
+                'id': obj.assigned_nurse.id,
+                'user': {
+                    'id': 0,
+                    'username': 'unknown',
+                    'first_name': 'Unknown',
+                    'last_name': 'Nurse',
+                },
+                'phone_number': obj.assigned_nurse.phone_number or '',
+                'license_number': obj.assigned_nurse.license_number or '',
+            }
+        return {
+            'id': obj.assigned_nurse.id,
+            'user': {
+                'id': obj.assigned_nurse.user.id,
+                'username': obj.assigned_nurse.user.username or 'unknown',
+                'first_name': obj.assigned_nurse.user.first_name or 'Unknown',
+                'last_name': obj.assigned_nurse.user.last_name or 'Nurse',
+            },
+            'phone_number': obj.assigned_nurse.phone_number or '',
+            'license_number': obj.assigned_nurse.license_number or '',
+        }
 
 
 class PatientAlertSerializer(serializers.ModelSerializer):

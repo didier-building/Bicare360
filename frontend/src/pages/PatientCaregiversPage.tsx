@@ -314,7 +314,11 @@ export default function PatientCaregiversPage() {
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => navigate('/patient/dashboard')}
+                onClick={() => {
+                  const role = localStorage.getItem('user_role');
+                  const dashboardRoute = role?.toLowerCase() === 'patient' ? '/patient/dashboard' : '/dashboard';
+                  navigate(dashboardRoute);
+                }}
                 className="flex items-center text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium"
               >
                 ← Back to Dashboard

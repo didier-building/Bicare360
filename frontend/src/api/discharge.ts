@@ -96,7 +96,7 @@ export const dischargeAPI = {
    * Get list of discharge summaries with optional filters
    */
   async getDischargeSummaries(params: DischargeSummaryListParams = {}): Promise<DischargeSummaryListResponse> {
-    console.log('🔵 API: Fetching discharge summaries with params:', params);
+    // console.log('🔵 API: Fetching discharge summaries with params:', params);
     try {
       const response = await apiClient.get<DischargeSummaryListResponse>('/v1/discharge-summaries/', { params });
       console.log('✅ API: Fetched discharge summaries:', response.data.count, 'records');
@@ -111,7 +111,7 @@ export const dischargeAPI = {
    * Get a single discharge summary by ID
    */
   async getDischargeSummary(id: number): Promise<DischargeSummary> {
-    console.log('🔵 API: Fetching discharge summary ID:', id);
+    // console.log('🔵 API: Fetching discharge summary ID:', id);
     try {
       const response = await apiClient.get<DischargeSummary>(`/v1/discharge-summaries/${id}/`);
       console.log('✅ API: Fetched discharge summary:', response.data);
@@ -126,7 +126,7 @@ export const dischargeAPI = {
    * Create a new discharge summary
    */
   async createDischargeSummary(data: DischargeSummaryCreateData): Promise<DischargeSummary> {
-    console.log('🔵 API: Creating discharge summary:', data);
+    // console.log('🔵 API: Creating discharge summary:', data);
     try {
       const response = await apiClient.post<DischargeSummary>('/v1/discharge-summaries/', data);
       console.log('✅ API: Created discharge summary:', response.data);
@@ -141,7 +141,7 @@ export const dischargeAPI = {
    * Update an existing discharge summary
    */
   async updateDischargeSummary(id: number, data: Partial<DischargeSummaryCreateData>): Promise<DischargeSummary> {
-    console.log('🔵 API: Updating discharge summary ID:', id, 'with data:', data);
+    // console.log('🔵 API: Updating discharge summary ID:', id, 'with data:', data);
     try {
       const response = await apiClient.patch<DischargeSummary>(`/v1/discharge-summaries/${id}/`, data);
       console.log('✅ API: Updated discharge summary:', response.data);
@@ -156,7 +156,7 @@ export const dischargeAPI = {
    * Delete a discharge summary
    */
   async deleteDischargeSummary(id: number): Promise<void> {
-    console.log('🔵 API: Deleting discharge summary ID:', id);
+    // console.log('🔵 API: Deleting discharge summary ID:', id);
     try {
       await apiClient.delete(`/v1/discharge-summaries/${id}/`);
       console.log('✅ API: Deleted discharge summary ID:', id);
@@ -170,7 +170,7 @@ export const dischargeAPI = {
    * Get discharge summaries for a specific patient
    */
   async getPatientDischargeSummaries(patientId: number): Promise<DischargeSummary[]> {
-    console.log('🔵 API: Fetching discharge summaries for patient ID:', patientId);
+    // console.log('🔵 API: Fetching discharge summaries for patient ID:', patientId);
     try {
       const response = await apiClient.get<DischargeSummaryListResponse>('/v1/discharge-summaries/', {
         params: { patient: patientId }
@@ -187,7 +187,7 @@ export const dischargeAPI = {
    * Get discharge summaries by risk level
    */
   async getDischargeSummariesByRisk(riskLevel: string): Promise<DischargeSummary[]> {
-    console.log('🔵 API: Fetching discharge summaries with risk level:', riskLevel);
+    // console.log('🔵 API: Fetching discharge summaries with risk level:', riskLevel);
     try {
       const response = await apiClient.get<DischargeSummaryListResponse>('/v1/discharge-summaries/', {
         params: { risk_level: riskLevel }

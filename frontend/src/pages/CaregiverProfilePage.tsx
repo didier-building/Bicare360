@@ -6,6 +6,7 @@ export default function CaregiverProfilePage() {
   const navigate = useNavigate();
   const [caregiver, setCaregiver] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const numericRating = Number(caregiver?.rating ?? 0);
 
   useEffect(() => {
     const caregiverData = localStorage.getItem('caregiver');
@@ -121,12 +122,12 @@ export default function CaregiverProfilePage() {
               </h2>
               <div className="flex items-center gap-4">
                 <div className="text-4xl font-bold text-teal-600">
-                  {caregiver?.rating?.toFixed(1)}
+                  {Number.isFinite(numericRating) ? numericRating.toFixed(1) : '0.0'}
                 </div>
                 <div>
                   <div className="flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (
-                      <span key={i} className={i < Math.round(caregiver?.rating || 0) ? 'text-yellow-400' : 'text-gray-300'}>
+                      <span key={i} className={i < Math.round(Number.isFinite(numericRating) ? numericRating : 0) ? 'text-yellow-400' : 'text-gray-300'}>
                         ⭐
                       </span>
                     ))}

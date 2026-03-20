@@ -97,17 +97,26 @@ WSGI_APPLICATION = "bicare360.wsgi.application"
 ASGI_APPLICATION = "bicare360.asgi.application"
 
 # Django Channels Configuration
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [env("REDIS_URL", default="redis://localhost:6379/1")],
-            # Connection pool settings for better performance
-            "capacity": 1500,  # Maximum number of messages to store
-            "expiry": 10,  # Message expiry time in seconds
+REDIS_URL = env("REDIS_URL", default="")
+
+if REDIS_URL:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [REDIS_URL],
+                # Connection pool settings for better performance
+                "capacity": 1500,  # Maximum number of messages to store
+                "expiry": 10,  # Message expiry time in seconds
+            },
         },
-    },
-}
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        }
+    }
 
 # Database
 DATABASES = {

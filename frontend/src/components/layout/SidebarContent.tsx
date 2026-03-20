@@ -13,6 +13,7 @@ import {
   ArrowRightOnRectangleIcon,
   CalendarDaysIcon,
   HeartIcon,
+  ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/outline';
 
 interface SidebarContentProps {
@@ -30,7 +31,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ onClose }) => {
     { name: 'Alerts', href: '/alerts', icon: BellAlertIcon },
     { name: 'Health', href: '/health', icon: HeartIcon },
     { name: 'Patients', href: '/patients', icon: UsersIcon },
-    { name: 'Patient Search', href: '/patients/search', icon: UsersIcon },
+    { name: 'Messages', href: '/messages', icon: ChatBubbleLeftRightIcon },
     { name: 'Medications', href: '/medications', icon: BeakerIcon },
     { name: 'Med Adherence', href: '/adherence', icon: CalendarDaysIcon },
     { name: 'Appointments', href: '/appointments', icon: CalendarDaysIcon },

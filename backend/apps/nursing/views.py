@@ -78,7 +78,7 @@ class NurseProfileViewSet(viewsets.ModelViewSet):
 class PatientAlertViewSet(viewsets.ModelViewSet):
     """ViewSet for managing patient alerts."""
     queryset = PatientAlert.objects.all().select_related(
-        'patient', 'assigned_nurse__user', 'discharge_summary', 'appointment'
+        'patient__user', 'assigned_nurse__user', 'discharge_summary', 'appointment'
     )
     permission_classes = [IsNurseOrAdmin]  # Only nurses and admins can access alert management
     # Pagination enabled for standard DRF behavior
@@ -93,7 +93,7 @@ class PatientAlertViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         queryset = PatientAlert.objects.all().select_related(
-            'patient', 'assigned_nurse__user', 'discharge_summary', 'appointment'
+            'patient__user', 'assigned_nurse__user', 'discharge_summary', 'appointment'
         )
         
         # If user is a patient, filter to only their alerts

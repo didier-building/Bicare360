@@ -24,17 +24,16 @@ LOGGING = {
         },
     },
     "handlers": {
-        "file": {
-            "level": "ERROR",
-            "class": "logging.FileHandler",
-            "filename": BASE_DIR / "logs" / "django.log",
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
     },
     "loggers": {
         "django": {
-            "handlers": ["file"],
-            "level": "ERROR",
+            "handlers": ["console"],
+            "level": "INFO",
             "propagate": True,
         },
     },

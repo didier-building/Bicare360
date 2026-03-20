@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import toast from 'react-hot-toast';
+import { getDashboardRoute } from '../utils/routing';
 
 interface Props {
   children: ReactNode;
@@ -28,7 +29,8 @@ class ErrorBoundary extends Component<Props, State> {
 
   private handleReset = () => {
     this.setState({ hasError: false, error: null });
-    window.location.href = '/dashboard';
+    const dashboardRoute = getDashboardRoute();
+    window.location.href = dashboardRoute;
   };
 
   public render() {

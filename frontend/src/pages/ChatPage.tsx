@@ -16,32 +16,56 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { ChatList, ChatWindow } from '../components/chat';
+import { createConversation, getConversations } from '../api/chat';
+
+type ConversationTarget = {
+  label: string;
+  payload: {
+    patient_id?: number;
+    caregiver_id?: number;
+    nurse_id?: number;
+  };
+};
 
 export const ChatPage: React.FC = () => {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
   /**
-   * Get current user from auth context/store
-   * For demo purposes, using localStorage or a mock value
+   * Read current user id from localStorage user object or JWT as fallback.
    */
   useEffect(() => {
-    // TODO: Replace with actual auth context/store
     const userStr = localStorage.getItem('user');
     if (userStr) {
       try {
         const user = JSON.parse(userStr);
-        setCurrentUserId(user.id);
+        if (user?.id) {
+          setCurrentUserId(Number(user.id));
+          return;
+        }
       } catch (error) {
         console.error('Failed to parse user:', error);
-        // Fallback for demo
-        setCurrentUserId(1);
       }
-    } else {
-      // Fallback for demo
-      setCurrentUserId(1);
     }
+
+    // Fallback: decode JWT payload to get user_id
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      try {
+        const payloadBase64 = token.split('.')[1];
+        const payload = JSON.parse(atob(payloadBase64));
+        if (payload?.user_id) {
+          setCurrentUserId(Number(payload.user_id));
+          return;
+        }
+      } catch (error) {
+        console.error('Failed to decode access token:', error);
+      }
+    }
+
+    setCurrentUserId(1);
   }, []);
 
   /**
@@ -52,12 +76,181 @@ export const ChatPage: React.FC = () => {
   };
 
   /**
-   * Handle new conversation creation
+   * Ask user to choose a target when multiple options exist.
    */
-  const handleCreateConversation = () => {
-    // TODO: Implement new conversation modal/page
-    console.log('Create new conversation');
-    alert('New conversation feature coming soon!');
+  const pickTarget = (targets: ConversationTarget[]): ConversationTarget | null => {
+    if (targets.length === 0) return null;
+    if (targets.length === 1) return targets[0];
+
+    const options = targets
+      .map((target, index) => `${index + 1}. ${target.label}`)
+      .join('\n');
+
+    const raw = window.prompt(`Choose who to chat with:\n\n${options}\n\nEnter number:`);
+    if (!raw) return null;
+
+    const selectedIndex = Number(raw) - 1;
+    if (Number.isNaN(selectedIndex) || selectedIndex < 0 || selectedIndex >= targets.length) {
+      toast.error('Invalid selection. Please try again.');
+      return null;
+    }
+
+    return targets[selectedIndex];
+  };
+
+  /**
+   * Handle new conversation creation from role-based relationships.
+   */
+  const handleCreateConversation = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        toast.error('Please log in first.');
+        return;
+      }
+
+      const role = (localStorage.getItem('user_role') || '').toLowerCase();
+      const targets: ConversationTarget[] = [];
+
+      // Patient and caregiver both derive chat pairs from caregiver bookings.
+      if (role === 'patient' || role === 'caregiver') {
+        const bookingsResponse = await fetch('/api/v1/caregivers/bookings/', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!bookingsResponse.ok) {
+          toast.error('Failed to load bookings to start conversation.');
+          return;
+        }
+
+        const bookingsData = await bookingsResponse.json();
+        const bookings = bookingsData.results || bookingsData;
+
+        if (!Array.isArray(bookings) || bookings.length === 0) {
+          toast.error('No bookings found. You need at least one booking to start a chat.');
+          return;
+        }
+
+        const uniquePairs = new Set<string>();
+
+        for (const booking of bookings) {
+          const patientId = Number(booking?.patient);
+          const caregiverId = Number(booking?.caregiver);
+
+          if (!patientId || !caregiverId) continue;
+
+          const key = `${patientId}:${caregiverId}`;
+          if (uniquePairs.has(key)) continue;
+          uniquePairs.add(key);
+
+          const patientName = booking?.patient_name || `Patient #${patientId}`;
+          const caregiverName = booking?.caregiver_name || `Caregiver #${caregiverId}`;
+
+          targets.push({
+            label: role === 'patient' ? caregiverName : patientName,
+            payload: {
+              patient_id: patientId,
+              caregiver_id: caregiverId,
+            },
+          });
+        }
+      }
+
+      // Nurses derive chat pairs from nurse-patient assignments.
+      if (role === 'nurse') {
+        const assignmentsResponse = await fetch('/api/v1/nursing/assignments/my_patients/', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!assignmentsResponse.ok) {
+          toast.error('Failed to load nurse assignments to start conversation.');
+          return;
+        }
+
+        const assignmentsData = await assignmentsResponse.json();
+        const assignments = assignmentsData.results || assignmentsData;
+
+        if (!Array.isArray(assignments) || assignments.length === 0) {
+          toast.error('No active assignments found. Assign a patient first to start a chat.');
+          return;
+        }
+
+        const uniquePairs = new Set<string>();
+
+        for (const assignment of assignments) {
+          const patientId = Number(assignment?.patient?.id || assignment?.patient);
+          const nurseId = Number(assignment?.nurse?.id || assignment?.nurse);
+
+          if (!patientId || !nurseId) continue;
+
+          const key = `${patientId}:${nurseId}`;
+          if (uniquePairs.has(key)) continue;
+          uniquePairs.add(key);
+
+          const firstName = assignment?.patient?.user?.first_name || assignment?.patient?.first_name || 'Patient';
+          const lastName = assignment?.patient?.user?.last_name || assignment?.patient?.last_name || '';
+          const patientName = `${firstName} ${lastName}`.trim();
+
+          targets.push({
+            label: patientName || `Patient #${patientId}`,
+            payload: {
+              patient_id: patientId,
+              nurse_id: nurseId,
+            },
+          });
+        }
+      }
+
+      if (targets.length === 0) {
+        toast.error('No eligible chat participants found for your role yet.');
+        return;
+      }
+
+      const selectedTarget = pickTarget(targets);
+      if (!selectedTarget) {
+        return;
+      }
+
+      try {
+        const conversation = await createConversation(selectedTarget.payload);
+        setActiveConversationId(conversation.id);
+        toast.success(`Conversation opened with ${selectedTarget.label}.`);
+      } catch (error: any) {
+        // Defensive fallback: find existing conversation in list.
+        const conversations = await getConversations();
+        const existing = conversations.results.find((c) => {
+          const patientMatch = selectedTarget.payload.patient_id
+            ? c.patient?.id === selectedTarget.payload.patient_id
+            : c.patient == null;
+          const caregiverMatch = selectedTarget.payload.caregiver_id
+            ? c.caregiver?.id === selectedTarget.payload.caregiver_id
+            : c.caregiver == null;
+          const nurseMatch = selectedTarget.payload.nurse_id
+            ? c.nurse?.id === selectedTarget.payload.nurse_id
+            : c.nurse == null;
+          return patientMatch && caregiverMatch && nurseMatch;
+        });
+
+        if (existing) {
+          setActiveConversationId(existing.id);
+          toast.success(`Opened existing conversation with ${selectedTarget.label}.`);
+          return;
+        }
+
+        const responseData = error?.response?.data;
+        console.error('Conversation create failed:', responseData || error);
+        toast.error('Could not open conversation. Please try again.');
+      }
+    } catch (error) {
+      console.error('Create conversation failed:', error);
+      toast.error('Could not create conversation.');
+    }
   };
 
   /**

@@ -127,14 +127,8 @@ export default function PatientDashboardPage() {
           console.log('No discharge summaries endpoint found, continuing...');
         }
 
-        // Fetch alerts
-        try {
-          const alertsResponse = await client.get('/v1/nursing/alerts/?patient_id=' + patientData.id);
-          const alertsData = alertsResponse.data.results || alertsResponse.data;
-          setAlerts(Array.isArray(alertsData) ? alertsData : []);
-        } catch (err) {
-          console.log('No alerts endpoint found, continuing...');
-        }
+        // Note: Nursing alerts are not accessible to patients (staff-only endpoint)
+        // Alerts are for nurse workflow management, not patient-facing
 
         // Fetch vitals (latest readings)
         try {
@@ -168,16 +162,8 @@ export default function PatientDashboardPage() {
           setAdherenceRate(0);
         }
 
-        // Fetch last symptom report date
-        try {
-          const alertsWithSymptoms = await client.get('/v1/nursing/alerts/?alert_type=symptom_report&patient_id=' + patientData.id + '&page_size=1');
-          const alertsData = alertsWithSymptoms.data.results || alertsWithSymptoms.data;
-          if (Array.isArray(alertsData) && alertsData.length > 0) {
-            setLastSymptomDate(new Date(alertsData[0].created_at).toLocaleDateString());
-          }
-        } catch (err) {
-          console.log('Failed to fetch symptom date:', err);
-        }
+        // Note: Last symptom date would come from a patient-specific endpoint
+        // Nursing alerts endpoint is restricted to staff only
       } catch (err) {
         console.error('Dashboard error:', err);
         setError('Failed to load dashboard data');
@@ -427,6 +413,12 @@ export default function PatientDashboardPage() {
                 className="flex-1 sm:flex-none px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-medium rounded-lg transition-all duration-200 text-sm whitespace-nowrap"
               >
                 + Request Appointment
+              </button>
+              <button
+                onClick={() => navigate('/patient/messages')}
+                className="flex-1 sm:flex-none px-4 py-2 bg-gradient-to-r from-teal-600 to-cyan-500 hover:from-teal-700 hover:to-cyan-600 text-white font-medium rounded-lg transition-all duration-200 text-sm whitespace-nowrap"
+              >
+                Message Care Team
               </button>
               <button
                 onClick={() => navigate('/patient/caregivers')}

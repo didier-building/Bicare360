@@ -65,7 +65,7 @@ const appointmentsAPI = {
    * Get list of appointments with optional filters
    */
   async getAppointments(params?: AppointmentListParams): Promise<AppointmentListResponse> {
-    console.log('🔵 Fetching appointments:', params);
+    // console.log('🔵 Fetching appointments:', params);
     try {
       const response = await apiClient.get<AppointmentListResponse>('/v1/appointments/', { params });
       console.log('✅ Appointments fetched:', response.data);
@@ -80,7 +80,7 @@ const appointmentsAPI = {
    * Get a single appointment by ID
    */
   async getAppointment(id: number): Promise<Appointment> {
-    console.log('🔵 Fetching appointment:', id);
+    // console.log('🔵 Fetching appointment:', id);
     try {
       const response = await apiClient.get<Appointment>(`/v1/appointments/${id}/`);
       console.log('✅ Appointment fetched:', response.data);
@@ -95,7 +95,7 @@ const appointmentsAPI = {
    * Get upcoming appointments (future, not cancelled/completed)
    */
   async getUpcomingAppointments(params?: AppointmentListParams): Promise<AppointmentListResponse> {
-    console.log('🔵 Fetching upcoming appointments');
+    // console.log('🔵 Fetching upcoming appointments');
     try {
       const response = await apiClient.get<AppointmentListResponse>('/v1/appointments/upcoming/', { params });
       console.log('✅ Upcoming appointments fetched:', response.data);
@@ -110,7 +110,7 @@ const appointmentsAPI = {
    * Create a new appointment
    */
   async createAppointment(data: AppointmentCreateData): Promise<Appointment> {
-    console.log('🔵 Creating appointment:', data);
+    // console.log('🔵 Creating appointment:', data);
     try {
       const response = await apiClient.post<Appointment>('/v1/appointments/', data);
       console.log('✅ Appointment created:', response.data);
@@ -125,7 +125,7 @@ const appointmentsAPI = {
    * Update an existing appointment
    */
   async updateAppointment(id: number, data: Partial<AppointmentCreateData>): Promise<Appointment> {
-    console.log('🔵 Updating appointment:', id, data);
+    // console.log('🔵 Updating appointment:', id, data);
     try {
       const response = await apiClient.patch<Appointment>(`/v1/appointments/${id}/`, data);
       console.log('✅ Appointment updated:', response.data);
@@ -140,7 +140,7 @@ const appointmentsAPI = {
    * Delete an appointment
    */
   async deleteAppointment(id: number): Promise<void> {
-    console.log('🔵 Deleting appointment:', id);
+    // console.log('🔵 Deleting appointment:', id);
     try {
       await apiClient.delete(`/v1/appointments/${id}/`);
       console.log('✅ Appointment deleted');
@@ -154,7 +154,7 @@ const appointmentsAPI = {
    * Confirm an appointment
    */
   async confirmAppointment(id: number): Promise<Appointment> {
-    console.log('🔵 Confirming appointment:', id);
+    // console.log('🔵 Confirming appointment:', id);
     try {
       const response = await apiClient.post<Appointment>(`/v1/appointments/${id}/confirm/`);
       console.log('✅ Appointment confirmed:', response.data);
@@ -169,7 +169,7 @@ const appointmentsAPI = {
    * Cancel an appointment
    */
   async cancelAppointment(id: number): Promise<Appointment> {
-    console.log('🔵 Cancelling appointment:', id);
+    // console.log('🔵 Cancelling appointment:', id);
     try {
       const response = await apiClient.post<Appointment>(`/v1/appointments/${id}/cancel/`);
       console.log('✅ Appointment cancelled:', response.data);
@@ -184,7 +184,7 @@ const appointmentsAPI = {
    * Mark appointment as completed
    */
   async completeAppointment(id: number): Promise<Appointment> {
-    console.log('🔵 Completing appointment:', id);
+    // console.log('🔵 Completing appointment:', id);
     try {
       const response = await apiClient.post<Appointment>(`/v1/appointments/${id}/complete/`);
       console.log('✅ Appointment completed:', response.data);

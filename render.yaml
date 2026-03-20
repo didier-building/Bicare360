@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: Bicare360
+    env: python
+    rootDir: backend
+    buildCommand: uv sync --frozen
+    startCommand: uv run python manage.py migrate && uv run daphne -b 0.0.0.0 -p ${PORT:-10000} bicare360.asgi:application
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: bicare360.onrender.com
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://bicare360.onrender.com

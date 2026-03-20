@@ -117,6 +117,7 @@ export default function CaregiverLoginPage() {
       // Store authentication data in localStorage
       localStorage.setItem('access_token', data.tokens.access);
       localStorage.setItem('refresh_token', data.tokens.refresh);
+      localStorage.setItem('user_role', 'caregiver'); // For dashboard routing
       localStorage.setItem('user', JSON.stringify({
         ...data.user,
         role: 'caregiver',

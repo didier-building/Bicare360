@@ -114,6 +114,41 @@ class ConversationViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
+    def create(self, request, *args, **kwargs):
+        """
+        Create a conversation or return an existing one for the same participants.
+
+        This makes POST idempotent for participant pairs and avoids 400 responses
+        when a conversation already exists.
+        """
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+        # Handle duplicate conversation gracefully by returning existing conversation.
+        error_text = str(serializer.errors).lower()
+        if "already exists" in error_text:
+            patient_id = request.data.get("patient_id")
+            caregiver_id = request.data.get("caregiver_id")
+            nurse_id = request.data.get("nurse_id")
+
+            filters = {}
+            if patient_id not in (None, "", "null"):
+                filters["patient_id"] = patient_id
+            if caregiver_id not in (None, "", "null"):
+                filters["caregiver_id"] = caregiver_id
+            if nurse_id not in (None, "", "null"):
+                filters["nurse_id"] = nurse_id
+
+            existing = self.get_queryset().filter(**filters).first() if filters else None
+            if existing:
+                existing_data = self.get_serializer(existing).data
+                return Response(existing_data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ChatMessageViewSet(viewsets.ModelViewSet):
     """

@@ -87,7 +87,7 @@ class PrescriptionViewSet(viewsets.ModelViewSet):
             is_active=True,
             start_date__lte=today,
             end_date__gte=today
-        )
+        ).select_related('patient', 'medication')[:50]  # Limit to 50 for performance
         
         page = self.paginate_queryset(current_prescriptions)
         if page is not None:

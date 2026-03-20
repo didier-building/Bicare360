@@ -185,12 +185,16 @@ const AlertsPage: React.FC = () => {
                   <p className="text-gray-600 mb-3">{alert.description}</p>
 
                   <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-                    <span className="flex items-center gap-1">
-                      👤 {alert.patient.first_name} {alert.patient.last_name}
-                    </span>
-                    <span>MRN: {alert.patient.medical_record_number}</span>
+                    {alert.patient && (
+                      <>
+                        <span className="flex items-center gap-1">
+                          👤 {alert.patient.first_name} {alert.patient.last_name}
+                        </span>
+                        <span>MRN: {alert.patient.medical_record_number}</span>
+                      </>
+                    )}
                     <span>🕒 {formatDistanceToNow(new Date(alert.created_at), { addSuffix: true })}</span>
-                    {alert.assigned_nurse && (
+                    {alert.assigned_nurse && alert.assigned_nurse.user && (
                       <span>
                         Assigned to: {alert.assigned_nurse.user.first_name} {alert.assigned_nurse.user.last_name}
                       </span>

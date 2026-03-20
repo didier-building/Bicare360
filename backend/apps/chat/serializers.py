@@ -22,6 +22,9 @@ Date: February 2026
 from rest_framework import serializers
 
 from apps.chat.models import ChatMessage, Conversation, MessageAttachment
+from apps.caregivers.models import Caregiver
+from apps.nursing.models import NurseProfile
+from apps.patients.models import Patient
 
 
 class ConversationSerializer(serializers.ModelSerializer):
@@ -66,9 +69,27 @@ class ConversationSerializer(serializers.ModelSerializer):
     nurse = serializers.SerializerMethodField()
     
     # Writable fields for POST/PUT (use IDs)
-    patient_id = serializers.IntegerField(write_only=True, required=False, allow_null=True, source='patient')
-    caregiver_id = serializers.IntegerField(write_only=True, required=False, allow_null=True, source='caregiver')
-    nurse_id = serializers.IntegerField(write_only=True, required=False, allow_null=True, source='nurse')
+    patient_id = serializers.PrimaryKeyRelatedField(
+        queryset=Patient.objects.all(),
+        write_only=True,
+        required=False,
+        allow_null=True,
+        source='patient'
+    )
+    caregiver_id = serializers.PrimaryKeyRelatedField(
+        queryset=Caregiver.objects.all(),
+        write_only=True,
+        required=False,
+        allow_null=True,
+        source='caregiver'
+    )
+    nurse_id = serializers.PrimaryKeyRelatedField(
+        queryset=NurseProfile.objects.all(),
+        write_only=True,
+        required=False,
+        allow_null=True,
+        source='nurse'
+    )
     
     # Computed fields
     unread_count = serializers.SerializerMethodField()
@@ -96,6 +117,10 @@ class ConversationSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+        # We handle duplicate prevention in validate(); default validators
+        # generated from conditional unique constraints incorrectly force
+        # unrelated fields (e.g., nurse_id) as required.
+        validators = []
     
     def get_patient(self, obj):
         """Get patient participant with user details."""

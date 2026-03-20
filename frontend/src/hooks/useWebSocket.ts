@@ -81,6 +81,7 @@ export const useWebSocket = (
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const shouldReconnectRef = useRef(true);
   const reconnectAttempts = useRef(0);
   const maxReconnectAttempts = 5;
 
@@ -90,6 +91,22 @@ export const useWebSocket = (
   const connect = useCallback(() => {
     if (!conversationId) {
       console.warn('⚠️ No conversation ID provided, skipping WebSocket connection');
+      return;
+    }
+
+    shouldReconnectRef.current = true;
+
+    // Clear pending reconnect timer before creating a fresh connection.
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+
+    // Reuse active/connecting socket instead of creating duplicate connections.
+    if (
+      wsRef.current &&
+      (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING)
+    ) {
       return;
     }
 
@@ -177,18 +194,28 @@ export const useWebSocket = (
     };
 
     ws.onerror = (error) => {
+      // Ignore errors from stale sockets or intentional shutdown.
+      if (wsRef.current !== ws || !shouldReconnectRef.current) {
+        return;
+      }
+
       console.error('❌ WebSocket error:', error);
       setIsConnected(false);
       onError?.('WebSocket connection error');
     };
 
     ws.onclose = (event) => {
+      // Ignore close events from stale sockets.
+      if (wsRef.current !== ws) {
+        return;
+      }
+
       console.log(`🔌 WebSocket closed: Code ${event.code}, Reason: ${event.reason}`);
       setIsConnected(false);
       wsRef.current = null;
 
-      // Attempt reconnection if not intentionally closed
-      if (event.code !== 1000 && reconnectAttempts.current < maxReconnectAttempts) {
+      // Attempt reconnection only for unexpected closures.
+      if (shouldReconnectRef.current && event.code !== 1000 && reconnectAttempts.current < maxReconnectAttempts) {
         const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
         console.log(`🔄 Reconnecting in ${delay}ms (attempt ${reconnectAttempts.current + 1}/${maxReconnectAttempts})`);
         
@@ -283,8 +310,10 @@ export const useWebSocket = (
 
     // Cleanup on unmount
     return () => {
+      shouldReconnectRef.current = false;
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
       }
       if (wsRef.current) {
         wsRef.current.close(1000, 'Component unmounted');

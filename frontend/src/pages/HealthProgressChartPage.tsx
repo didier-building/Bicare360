@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import client from '../api/client';
+import { useAuthStore } from '../stores/authStore';
 import {
   ChartBarIcon,
   HeartIcon,
@@ -44,6 +45,7 @@ const VITAL_TYPES = [
 
 const HealthProgressChartPage: React.FC = () => {
   const { patientId: patientIdParam } = useParams<{ patientId: string }>();
+  const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState('summary');
   const [selectedVitalType, setSelectedVitalType] = useState('heart_rate');
   const [trendDays, setTrendDays] = useState(7);
@@ -60,8 +62,7 @@ const HealthProgressChartPage: React.FC = () => {
     }
 
     // Only fetch /patients/me/ if user is a patient (has patient role)
-    const userRole = localStorage.getItem('user_role');
-    if (userRole !== 'patient') {
+    if (user?.role && user.role !== 'patient') {
       setError('Health progress is only available for patients.');
       setIsLoadingPatientId(false);
       return;
@@ -81,7 +82,7 @@ const HealthProgressChartPage: React.FC = () => {
     };
 
     fetchPatientId();
-  }, [patientIdParam]);
+  }, [patientIdParam, user]);
 
   // All hooks must be called before any return
   const { 

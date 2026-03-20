@@ -195,7 +195,11 @@ export default function PatientMedicationsPage() {
               <p className="text-teal-100 text-sm mt-1">Track your prescriptions and adherence</p>
             </div>
             <button
-              onClick={() => navigate('/patient/dashboard')}
+              onClick={() => {
+                const role = localStorage.getItem('user_role');
+                const dashboardRoute = role?.toLowerCase() === 'patient' ? '/patient/dashboard' : '/dashboard';
+                navigate(dashboardRoute);
+              }}
               className="px-3 sm:px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors text-sm sm:text-base"
             >
               ← Back

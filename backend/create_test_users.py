@@ -73,6 +73,12 @@ def create_test_users():
             'is_superuser': False,
         }
     )
+    # Ensure is_staff is True (in case user was created by another script)
+    if not nurse_user.is_staff:
+        nurse_user.is_staff = True
+        nurse_user.save()
+        print("✅ Updated nurse user to is_staff=True")
+    
     if created:
         nurse_user.set_password('Nurse@2026')
         nurse_user.save()

@@ -14,7 +14,11 @@ Each portal uses **different login fields**:
 | **Patient** | `Username` | username OR national ID | `patient1` |
 | **Staff/Nurse** | `Username` | username OR email | `nurse1` |
 | **Caregiver** | `Email` ⚠️ | email ONLY | `caregiver@test.com` |
+Something went wrong
+We encountered an unexpected error. Please try again or contact support if the problem persists.
 
+Error details
+TypeError: Cannot read properties of undefined (reading 'first_name')
 ---
 
 ## 📋 Complete Test Credentials

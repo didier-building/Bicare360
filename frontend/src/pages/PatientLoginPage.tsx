@@ -118,6 +118,7 @@ export default function PatientLoginPage() {
       localStorage.setItem('refresh_token', loginResponse.tokens.refresh);
       localStorage.setItem('patient_id', String(loginResponse.patient.id));
       localStorage.setItem('patient_name', `${loginResponse.patient.first_name} ${loginResponse.patient.last_name}`);
+      localStorage.setItem('user_role', 'patient'); // For dashboard routing
 
       // Redirect to patient dashboard
       navigate('/patient/dashboard');

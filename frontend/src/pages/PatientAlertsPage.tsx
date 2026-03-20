@@ -66,12 +66,11 @@ export default function PatientAlertsPage() {
         setIsLoading(true);
         setError('');
 
-        // Fetch only current patient's alerts
-        const response = await client.get('/v1/nursing/alerts/');
-        const alertsData = response.data.results || response.data;
-        
-        setAlerts(alertsData);
-        applyFilters(alertsData, filterStatus, filterSeverity, sortBy);
+        // Note: Nursing alerts endpoint is restricted to staff only
+        // This feature would require a patient-specific alerts endpoint
+        setError('Alerts are currently managed by your care team. Contact your nurse if you have concerns.');
+        setAlerts([]);
+        setFilteredAlerts([]);
       } catch (err) {
         console.error('Failed to load alerts:', err);
         setError('Failed to load alerts');
@@ -188,7 +187,11 @@ export default function PatientAlertsPage() {
               <p className="text-teal-100 text-sm mt-1">Important health notifications & updates</p>
             </div>
             <button
-              onClick={() => navigate('/patient/dashboard')}
+              onClick={() => {
+                const role = localStorage.getItem('user_role');
+                const dashboardRoute = role?.toLowerCase() === 'patient' ? '/patient/dashboard' : '/dashboard';
+                navigate(dashboardRoute);
+              }}
               className="px-3 sm:px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors text-sm sm:text-base whitespace-nowrap"
             >
               ← Dashboard

@@ -74,7 +74,7 @@ export const adherenceAPI = {
    * Get list of adherence records with optional filters
    */
   async getAdherenceRecords(params: AdherenceListParams = {}): Promise<AdherenceListResponse> {
-    console.log('🔵 API: Fetching adherence records with params:', params);
+    // console.log('🔵 API: Fetching adherence records with params:', params);
     try {
       const response = await apiClient.get<AdherenceListResponse>('/v1/adherence/', { params });
       console.log('✅ API: Fetched adherence records:', response.data.count, 'records');
@@ -89,7 +89,7 @@ export const adherenceAPI = {
    * Get a single adherence record by ID
    */
   async getAdherenceRecord(id: number): Promise<AdherenceRecord> {
-    console.log('🔵 API: Fetching adherence record ID:', id);
+    // console.log('🔵 API: Fetching adherence record ID:', id);
     try {
       const response = await apiClient.get<AdherenceRecord>(`/v1/adherence/${id}/`);
       console.log('✅ API: Fetched adherence record:', response.data);
@@ -104,7 +104,7 @@ export const adherenceAPI = {
    * Mark an adherence record as taken
    */
   async markTaken(id: number): Promise<AdherenceRecord> {
-    console.log('🔵 API: Marking adherence record as taken:', id);
+    // console.log('🔵 API: Marking adherence record as taken:', id);
     try {
       const response = await apiClient.post<AdherenceRecord>(`/v1/adherence/${id}/mark_taken/`);
       console.log('✅ API: Marked adherence record as taken:', response.data);
@@ -119,7 +119,7 @@ export const adherenceAPI = {
    * Mark an adherence record as missed with optional reason
    */
   async markMissed(id: number, reason?: string): Promise<AdherenceRecord> {
-    console.log('🔵 API: Marking adherence record as missed:', id, reason);
+    // console.log('🔵 API: Marking adherence record as missed:', id, reason);
     try {
       const response = await apiClient.post<AdherenceRecord>(
         `/v1/adherence/${id}/mark_missed/`,
@@ -137,7 +137,7 @@ export const adherenceAPI = {
    * Get overdue adherence records
    */
   async getOverdueRecords(params: AdherenceListParams = {}): Promise<AdherenceListResponse> {
-    console.log('🔵 API: Fetching overdue adherence records');
+    // console.log('🔵 API: Fetching overdue adherence records');
     try {
       const response = await apiClient.get<AdherenceListResponse>('/v1/adherence/overdue/', { params });
       console.log('✅ API: Fetched overdue adherence records:', response.data.count, 'records');
@@ -152,7 +152,7 @@ export const adherenceAPI = {
    * Get adherence statistics
    */
   async getAdherenceStats(params: AdherenceListParams = {}): Promise<AdherenceStats> {
-    console.log('🔵 API: Fetching adherence statistics with params:', params);
+    // console.log('🔵 API: Fetching adherence statistics with params:', params);
     try {
       const response = await apiClient.get<AdherenceStats>('/v1/adherence/stats/', { params });
       console.log('✅ API: Fetched adherence stats:', response.data);
@@ -167,7 +167,7 @@ export const adherenceAPI = {
    * Create a new adherence record
    */
   async createAdherenceRecord(data: Partial<AdherenceRecord>): Promise<AdherenceRecord> {
-    console.log('🔵 API: Creating adherence record:', data);
+    // console.log('🔵 API: Creating adherence record:', data);
     try {
       const response = await apiClient.post<AdherenceRecord>('/v1/adherence/', data);
       console.log('✅ API: Created adherence record:', response.data);
@@ -182,7 +182,7 @@ export const adherenceAPI = {
    * Update an adherence record
    */
   async updateAdherenceRecord(id: number, data: Partial<AdherenceRecord>): Promise<AdherenceRecord> {
-    console.log('🔵 API: Updating adherence record ID:', id, 'with data:', data);
+    // console.log('🔵 API: Updating adherence record ID:', id, 'with data:', data);
     try {
       const response = await apiClient.patch<AdherenceRecord>(`/v1/adherence/${id}/`, data);
       console.log('✅ API: Updated adherence record:', response.data);
@@ -197,7 +197,7 @@ export const adherenceAPI = {
    * Delete an adherence record
    */
   async deleteAdherenceRecord(id: number): Promise<void> {
-    console.log('🔵 API: Deleting adherence record ID:', id);
+    // console.log('🔵 API: Deleting adherence record ID:', id);
     try {
       await apiClient.delete(`/v1/adherence/${id}/`);
       console.log('✅ API: Deleted adherence record ID:', id);
