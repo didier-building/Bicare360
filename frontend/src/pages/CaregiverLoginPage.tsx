@@ -93,7 +93,8 @@ export default function CaregiverLoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/v1/caregivers/login/', {
+      const apiUrl = import.meta.env.VITE_API_URL || '/api';
+      const response = await fetch(`${apiUrl}/v1/caregivers/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
