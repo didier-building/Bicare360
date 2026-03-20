@@ -18,7 +18,16 @@ SECRET_KEY = env("SECRET_KEY", default="django-insecure-change-this-in-productio
 
 DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1", "testserver"])
+ALLOWED_HOSTS = env.list(
+    "ALLOWED_HOSTS",
+    default=[
+        "localhost",
+        "127.0.0.1",
+        "testserver",
+        "bicare360.onrender.com",
+        ".onrender.com",
+    ],
+)
 
 # Application definition
 # Note: Daphne must be listed before django.contrib.staticfiles for proper ASGI handling
@@ -197,6 +206,18 @@ CORS_ALLOWED_ORIGINS = env.list(
         "http://localhost:5174",
         "http://127.0.0.1:5174",
     ],
+)
+
+# Optional regex allow-list (useful for Vercel preview domains)
+CORS_ALLOWED_ORIGIN_REGEXES = env.list(
+    "CORS_ALLOWED_ORIGIN_REGEXES",
+    default=[],
+)
+
+# CSRF trusted origins for browser-based frontends
+CSRF_TRUSTED_ORIGINS = env.list(
+    "CSRF_TRUSTED_ORIGINS",
+    default=[],
 )
 
 # Celery Configuration
