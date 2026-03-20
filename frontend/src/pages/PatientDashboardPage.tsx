@@ -71,7 +71,7 @@ export default function PatientDashboardPage() {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [summaries, setSummaries] = useState<DischargeSummary[]>([]);
-  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [alerts] = useState<Alert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
@@ -81,7 +81,7 @@ export default function PatientDashboardPage() {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [vitals, setVitals] = useState<VitalReading[]>([]);
   const [adherenceRate, setAdherenceRate] = useState<number>(0);
-  const [lastSymptomDate, setLastSymptomDate] = useState<string | null>(null);
+  const [lastSymptomDate] = useState<string | null>(null);
 
   useEffect(() => {
     const accessToken = localStorage.getItem('access_token');

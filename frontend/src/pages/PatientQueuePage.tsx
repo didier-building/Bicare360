@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { patientsAPI } from '../api/patients';
-import type { PatientDetail } from '../api/patients';
+import type { PatientDetail, PatientList, PatientResponse } from '../api/patients';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import PatientDetailModal from '../components/PatientDetailModal';
 import toast from 'react-hot-toast';
@@ -21,14 +21,13 @@ const PatientQueuePage: React.FC = () => {
   // Debounce search query to avoid refetching on every keystroke
   const debouncedSearchQuery = useDebounce(searchQuery, 1000);
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery<PatientResponse<PatientList>, Error>({
     queryKey: ['patients', debouncedSearchQuery, genderFilter, statusFilter, bloodTypeFilter],
     queryFn: () =>
       patientsAPI.getPatients({
         search: debouncedSearchQuery || undefined,
         gender: genderFilter || undefined,
         is_active: statusFilter === 'all' ? undefined : statusFilter === 'active',
-        blood_type: bloodTypeFilter || undefined,
         ordering: '-enrolled_date',
       }),
     staleTime: 1000 * 60, // Data is fresh for 1 minute
@@ -37,8 +36,20 @@ const PatientQueuePage: React.FC = () => {
 
   const filteredPatients = useMemo(() => {
     if (!data?.results) return [];
-    return data.results;
-  }, [data]);
+    if (!bloodTypeFilter) return data.results;
+    return data.results.filter((patient) => {
+      const typedPatient = patient as PatientDetail;
+      return typedPatient.blood_type === bloodTypeFilter;
+    });
+  }, [data, bloodTypeFilter]);
+
+  const errorMessage = (() => {
+    if (!error) return 'Unknown error';
+    if (typeof error === 'object' && error !== null && 'message' in error) {
+      return String((error as { message?: unknown }).message || 'Unknown error');
+    }
+    return 'Unknown error';
+  })();
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -111,7 +122,7 @@ const PatientQueuePage: React.FC = () => {
         <p className="text-red-600 mb-2">Failed to load patient queue. Please try again.</p>
         <p className="text-red-500 text-sm mb-4">{error instanceof Error ? error.message : 'Unknown error'}</p>
         <button
-          onClick={() => refetch()}
+          onClick={() => window.location.reload()}
           className="mt-4 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 shadow-md hover:shadow-lg transition-all"
         >
           Retry
@@ -247,9 +258,9 @@ const PatientQueuePage: React.FC = () => {
       ) : error ? (
         <div className="text-center py-12">
           <p className="text-red-600 mb-2">Failed to load patients. Please try again.</p>
-          <p className="text-red-500 text-sm mb-4">{error instanceof Error ? error.message : 'Unknown error'}</p>
+          <p className="text-red-500 text-sm mb-4">{errorMessage}</p>
           <button
-            onClick={() => refetch()}
+            onClick={() => window.location.reload()}
             className="mt-4 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 shadow-md hover:shadow-lg transition-all"
           >
             Retry
@@ -289,7 +300,9 @@ const PatientQueuePage: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredPatients.map((patient) => (
+                    {filteredPatients.map((patient) => {
+                      const typedPatient = patient as PatientList & Partial<PatientDetail>;
+                      return (
                       <tr
                         key={patient.id}
                         onClick={() => handleViewDetails(patient.id)}
@@ -313,9 +326,9 @@ const PatientQueuePage: React.FC = () => {
                             <p className="text-sm text-gray-900 dark:text-white">
                               {patient.phone_number}
                             </p>
-                            {patient.email && (
+                            {typedPatient.email && (
                               <p className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
-                                {patient.email}
+                                {typedPatient.email}
                               </p>
                             )}
                           </div>
@@ -327,9 +340,9 @@ const PatientQueuePage: React.FC = () => {
                             <span className="text-sm text-gray-700 dark:text-gray-300">
                               {patient.age}y, {getGenderLabel(patient.gender)}
                             </span>
-                            {patient.blood_type && (
+                            {typedPatient.blood_type && (
                               <span className="text-sm px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded font-medium">
-                                {patient.blood_type}
+                                {typedPatient.blood_type}
                               </span>
                             )}
                           </div>
@@ -360,7 +373,8 @@ const PatientQueuePage: React.FC = () => {
                           </span>
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
