@@ -183,12 +183,19 @@ export const ChatPage: React.FC = () => {
         }
 
         const uniquePairs = new Set<string>();
+        const assignedPatientIds = new Set<number>();
+        let nurseIdFromAssignments: number | null = null;
 
         for (const assignment of assignments) {
           const patientId = Number(assignment?.patient?.id || assignment?.patient);
           const nurseId = Number(assignment?.nurse?.id || assignment?.nurse);
 
           if (!patientId || !nurseId) continue;
+
+          assignedPatientIds.add(patientId);
+          if (!nurseIdFromAssignments) {
+            nurseIdFromAssignments = nurseId;
+          }
 
           const key = `${patientId}:${nurseId}`;
           if (uniquePairs.has(key)) continue;
@@ -199,12 +206,51 @@ export const ChatPage: React.FC = () => {
           const patientName = `${firstName} ${lastName}`.trim();
 
           targets.push({
-            label: patientName || `Patient #${patientId}`,
+            label: `Patient: ${patientName || `#${patientId}`}`,
             payload: {
               patient_id: patientId,
               nurse_id: nurseId,
             },
           });
+        }
+
+        // Also allow nurse-to-caregiver conversations for caregivers involved
+        // in the nurse's assigned patient bookings.
+        if (nurseIdFromAssignments && assignedPatientIds.size > 0) {
+          const bookingsResponse = await fetch(`${API_URL}/v1/caregivers/bookings/`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (bookingsResponse.ok) {
+            const bookingsData = await bookingsResponse.json();
+            const bookings = bookingsData.results || bookingsData;
+            const uniqueCaregivers = new Set<number>();
+
+            if (Array.isArray(bookings)) {
+              for (const booking of bookings) {
+                const patientId = Number(booking?.patient);
+                const caregiverId = Number(booking?.caregiver);
+
+                if (!patientId || !caregiverId) continue;
+                if (!assignedPatientIds.has(patientId)) continue;
+                if (uniqueCaregivers.has(caregiverId)) continue;
+
+                uniqueCaregivers.add(caregiverId);
+
+                const caregiverName = booking?.caregiver_name || `Caregiver #${caregiverId}`;
+                targets.push({
+                  label: `Caregiver: ${caregiverName}`,
+                  payload: {
+                    caregiver_id: caregiverId,
+                    nurse_id: nurseIdFromAssignments,
+                  },
+                });
+              }
+            }
+          }
         }
       }
 
