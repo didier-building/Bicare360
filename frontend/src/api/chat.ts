@@ -16,6 +16,7 @@
  */
 
 import client from './client';
+import axios from 'axios';
 
 // Types
 export interface User {
@@ -89,8 +90,17 @@ export interface PaginatedResponse<T> {
  * Fetch all conversations for the current user
  */
 export const getConversations = async (): Promise<PaginatedResponse<Conversation>> => {
-  const response = await client.get<PaginatedResponse<Conversation>>('/v1/chat/conversations/');
-  return response.data;
+  try {
+    const response = await client.get<PaginatedResponse<Conversation>>('/v1/chat/conversations/');
+    return response.data;
+  } catch (error) {
+    // Retry once when Render cold start or transient latency causes timeout.
+    if (axios.isAxiosError(error) && error.code === 'ECONNABORTED') {
+      const retryResponse = await client.get<PaginatedResponse<Conversation>>('/v1/chat/conversations/');
+      return retryResponse.data;
+    }
+    throw error;
+  }
 };
 
 /**

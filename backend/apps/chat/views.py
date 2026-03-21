@@ -97,7 +97,6 @@ class ConversationViewSet(viewsets.ModelViewSet):
         return (
             Conversation.objects.filter(query)
             .select_related("patient__user", "caregiver__user", "nurse__user")
-            .prefetch_related("messages")
             .order_by("-updated_at")
         )
     

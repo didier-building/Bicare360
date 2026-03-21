@@ -7,7 +7,7 @@ const client = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // 10 seconds
+  timeout: 30000, // 30 seconds to tolerate cold starts/network latency in production
 });
 
 // Request interceptor - Add JWT token to requests
