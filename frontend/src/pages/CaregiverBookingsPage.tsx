@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { API_URL } from '../api/config';
 
 export default function CaregiverBookingsPage() {
   const navigate = useNavigate();
@@ -14,8 +15,7 @@ export default function CaregiverBookingsPage() {
   const fetchBookings = async () => {
     try {
       const token = localStorage.getItem('access_token');
-      const apiUrl = import.meta.env.VITE_API_URL || '/api';
-      const response = await fetch(`${apiUrl}/v1/caregivers/bookings/`, {
+      const response = await fetch(`${API_URL}/v1/caregivers/bookings/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

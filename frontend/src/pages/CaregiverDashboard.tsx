@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { API_URL } from '../api/config';
 
 interface DashboardStats {
   total_bookings: number;
@@ -58,8 +59,7 @@ export default function CaregiverDashboard() {
 
   const fetchDashboardStats = async (token: string) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || '/api';
-      const response = await fetch(`${apiUrl}/v1/caregivers/dashboard-stats/`, {
+      const response = await fetch(`${API_URL}/v1/caregivers/dashboard-stats/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

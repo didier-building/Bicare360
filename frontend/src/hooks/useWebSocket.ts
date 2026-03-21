@@ -28,8 +28,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { Message } from '../api/chat';
-
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000';
+import { WS_URL } from '../api/config';
 
 export interface WebSocketMessage {
   type: 'chat_message' | 'message_read' | 'user_typing' | 'user_status' | 'error';

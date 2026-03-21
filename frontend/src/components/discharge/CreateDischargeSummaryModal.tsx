@@ -4,6 +4,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import { patientsAPI } from '../../api/patients';
 import { dischargeAPI } from '../../api/discharge';
+import { API_URL } from '../../api/config';
 import type { DischargeSummaryCreateData } from '../../api/discharge';
 
 interface CreateDischargeSummaryModalProps {
@@ -57,7 +58,7 @@ const CreateDischargeSummaryModal: React.FC<CreateDischargeSummaryModalProps> = 
   const { data: hospitalsData } = useQuery<{ results: Hospital[] }>({
     queryKey: ['hospitals'],
     queryFn: async () => {
-      const response = await fetch('http://localhost:8000/api/v1/hospitals/', {
+      const response = await fetch(`${API_URL}/v1/hospitals/`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },

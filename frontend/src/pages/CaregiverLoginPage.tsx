@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { API_URL } from '../api/config';
 
 interface LoginFormData {
   email: string;
@@ -93,8 +94,7 @@ export default function CaregiverLoginPage() {
     setIsLoading(true);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || '/api';
-      const response = await fetch(`${apiUrl}/v1/caregivers/login/`, {
+      const response = await fetch(`${API_URL}/v1/caregivers/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

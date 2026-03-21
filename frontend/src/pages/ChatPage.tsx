@@ -19,6 +19,7 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { ChatList, ChatWindow } from '../components/chat';
 import { createConversation, getConversations } from '../api/chat';
+import { API_URL } from '../api/config';
 
 type ConversationTarget = {
   label: string;
@@ -108,14 +109,13 @@ export const ChatPage: React.FC = () => {
         toast.error('Please log in first.');
         return;
       }
-      const apiUrl = import.meta.env.VITE_API_URL || '/api';
 
       const role = (localStorage.getItem('user_role') || '').toLowerCase();
       const targets: ConversationTarget[] = [];
 
       // Patient and caregiver both derive chat pairs from caregiver bookings.
       if (role === 'patient' || role === 'caregiver') {
-        const bookingsResponse = await fetch(`${apiUrl}/v1/caregivers/bookings/`, {
+        const bookingsResponse = await fetch(`${API_URL}/v1/caregivers/bookings/`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -162,7 +162,7 @@ export const ChatPage: React.FC = () => {
 
       // Nurses derive chat pairs from nurse-patient assignments.
       if (role === 'nurse') {
-        const assignmentsResponse = await fetch(`${apiUrl}/v1/nursing/assignments/my_patients/`, {
+        const assignmentsResponse = await fetch(`${API_URL}/v1/nursing/assignments/my_patients/`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',

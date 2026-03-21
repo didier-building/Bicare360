@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { API_URL } from '../api/config';
 
 interface LoginFormData {
   username: string;
@@ -77,8 +78,7 @@ export default function PatientLoginPage() {
     setIsLoading(true);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || '/api';
-      const response = await fetch(`${apiUrl}/v1/patients/login/`, {
+      const response = await fetch(`${API_URL}/v1/patients/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
