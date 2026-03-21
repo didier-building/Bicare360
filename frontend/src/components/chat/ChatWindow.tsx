@@ -16,7 +16,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { getMessages } from '../../api/chat';
+import { getMessages, sendMessage as sendMessageApi } from '../../api/chat';
 import type { Message } from '../../api/chat';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import { MessageList } from './MessageList';
@@ -120,6 +120,29 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   }, [conversationId]);
 
   /**
+   * Send message with websocket first, fallback to HTTP when realtime is unavailable.
+   */
+  const handleSend = useCallback(async (content: string) => {
+    if (isConnected) {
+      sendMessage(content);
+      return;
+    }
+
+    try {
+      const message = await sendMessageApi({ conversation: conversationId, content });
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === message.id)) {
+          return prev;
+        }
+        return [...prev, message];
+      });
+    } catch (sendError) {
+      console.error('Failed to send message via HTTP fallback:', sendError);
+      setError('Message could not be sent. Please try again.');
+    }
+  }, [conversationId, isConnected, sendMessage]);
+
+  /**
    * Get typing user name
    */
   const typingUserName = typingUserId
@@ -185,11 +208,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
       {/* Input */}
       <MessageInput
-        onSend={sendMessage}
+        onSend={handleSend}
         onTypingStart={startTyping}
         onTypingStop={stopTyping}
-        disabled={!isConnected}
-        placeholder={isConnected ? 'Type a message...' : 'Connecting...'}
+        disabled={false}
+        placeholder={isConnected ? 'Type a message...' : 'Type a message (sending without realtime)...'}
       />
     </div>
   );

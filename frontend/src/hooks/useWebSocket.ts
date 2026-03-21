@@ -83,11 +83,16 @@ export const useWebSocket = (
   const shouldReconnectRef = useRef(true);
   const reconnectAttempts = useRef(0);
   const maxReconnectAttempts = 5;
+  const realtimeUnavailableRef = useRef(false);
 
   /**
    * Connect to WebSocket server
    */
   const connect = useCallback(() => {
+    if (realtimeUnavailableRef.current) {
+      return;
+    }
+
     if (!conversationId) {
       console.warn('⚠️ No conversation ID provided, skipping WebSocket connection');
       return;
@@ -181,6 +186,11 @@ export const useWebSocket = (
 
           case 'error':
             console.error('❌ WebSocket error from server:', data.error);
+            if (data.error?.toLowerCase().includes('real-time channel is temporarily unavailable')) {
+              // Backend reported channel-layer outage; avoid infinite reconnect storm.
+              realtimeUnavailableRef.current = true;
+              shouldReconnectRef.current = false;
+            }
             onError?.(data.error || 'Unknown error');
             break;
 
@@ -297,6 +307,8 @@ export const useWebSocket = (
    * Manually trigger reconnection
    */
   const reconnect = useCallback(() => {
+    realtimeUnavailableRef.current = false;
+    shouldReconnectRef.current = true;
     reconnectAttempts.current = 0;
     connect();
   }, [connect]);
@@ -310,6 +322,7 @@ export const useWebSocket = (
     // Cleanup on unmount
     return () => {
       shouldReconnectRef.current = false;
+      realtimeUnavailableRef.current = false;
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
