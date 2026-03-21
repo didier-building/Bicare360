@@ -14,7 +14,8 @@ export default function CaregiverBookingsPage() {
   const fetchBookings = async () => {
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch('/api/v1/caregivers/bookings/', {
+      const apiUrl = import.meta.env.VITE_API_URL || '/api';
+      const response = await fetch(`${apiUrl}/v1/caregivers/bookings/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

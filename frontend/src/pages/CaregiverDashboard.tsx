@@ -58,7 +58,8 @@ export default function CaregiverDashboard() {
 
   const fetchDashboardStats = async (token: string) => {
     try {
-      const response = await fetch('/api/v1/caregivers/dashboard-stats/', {
+      const apiUrl = import.meta.env.VITE_API_URL || '/api';
+      const response = await fetch(`${apiUrl}/v1/caregivers/dashboard-stats/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
