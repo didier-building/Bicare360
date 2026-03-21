@@ -26,11 +26,21 @@ ALLOWED_HOSTS = env.list(
         "testserver",
         "bicare360.onrender.com",
         ".onrender.com",
+        "bicare360.vercel.app",
+        ".vercel.app",
     ],
 )
 
 # Ensure critical hosts are always present in production-like deployments.
-for required_host in ["localhost", "127.0.0.1", "testserver", "bicare360.onrender.com", ".onrender.com"]:
+for required_host in [
+    "localhost",
+    "127.0.0.1",
+    "testserver",
+    "bicare360.onrender.com",
+    ".onrender.com",
+    "bicare360.vercel.app",
+    ".vercel.app",
+]:
     if required_host not in ALLOWED_HOSTS:
         ALLOWED_HOSTS.append(required_host)
 
