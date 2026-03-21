@@ -171,6 +171,8 @@ class ConversationSerializer(serializers.ModelSerializer):
     
     def get_message_count(self, obj):
         """Get total message count."""
+        if hasattr(obj, "message_count"):
+            return int(obj.message_count or 0)
         return obj.messages.filter(is_deleted=False).count()
     
     def get_unread_count(self, obj):
@@ -188,6 +190,10 @@ class ConversationSerializer(serializers.ModelSerializer):
         if not request or not request.user:
             return 0
         
+        # Prefer annotated value from queryset when available.
+        if hasattr(obj, "unread_count"):
+            return int(obj.unread_count or 0)
+
         # Count messages not sent by current user and not read
         return obj.messages.filter(
             is_deleted=False,
@@ -204,6 +210,30 @@ class ConversationSerializer(serializers.ModelSerializer):
         Returns:
             dict: Last message data or None
         """
+        # Prefer annotated last-message metadata from queryset when available.
+        if hasattr(obj, "last_message_id") and obj.last_message_id:
+            sender_id = obj.last_message_sender_id
+            sender_first = obj.last_message_sender_first_name or ""
+            sender_last = obj.last_message_sender_last_name or ""
+            sender_full_name = f"{sender_first} {sender_last}".strip()
+            return {
+                "id": str(obj.last_message_id),
+                "conversation": str(obj.id),
+                "sender": {
+                    "id": sender_id,
+                    "email": obj.last_message_sender_email,
+                    "first_name": sender_first,
+                    "last_name": sender_last,
+                    "get_full_name": sender_full_name,
+                },
+                "content": obj.last_message_content,
+                "is_read": obj.last_message_is_read,
+                "read_at": obj.last_message_read_at,
+                "is_deleted": obj.last_message_is_deleted,
+                "created_at": obj.last_message_created_at,
+                "updated_at": obj.last_message_updated_at,
+            }
+
         last_msg = (
             obj.messages.filter(is_deleted=False)
             .order_by("-created_at")

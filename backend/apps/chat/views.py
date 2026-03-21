@@ -18,7 +18,7 @@ Author: Didier IMANIRAHARI
 Date: February 2026
 """
 
-from django.db.models import Q
+from django.db.models import Count, OuterRef, Q, Subquery
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -94,9 +94,34 @@ class ConversationViewSet(viewsets.ModelViewSet):
         if not query:
             return Conversation.objects.none()
         
+        last_messages = ChatMessage.objects.filter(
+            conversation=OuterRef("pk"),
+            is_deleted=False,
+        ).order_by("-created_at")
+
         return (
             Conversation.objects.filter(query)
             .select_related("patient__user", "caregiver__user", "nurse__user")
+            .annotate(
+                message_count=Count("messages", filter=Q(messages__is_deleted=False), distinct=True),
+                unread_count=Count(
+                    "messages",
+                    filter=Q(messages__is_deleted=False, messages__is_read=False)
+                    & ~Q(messages__sender=user),
+                    distinct=True,
+                ),
+                last_message_id=Subquery(last_messages.values("id")[:1]),
+                last_message_content=Subquery(last_messages.values("content")[:1]),
+                last_message_created_at=Subquery(last_messages.values("created_at")[:1]),
+                last_message_updated_at=Subquery(last_messages.values("updated_at")[:1]),
+                last_message_is_read=Subquery(last_messages.values("is_read")[:1]),
+                last_message_read_at=Subquery(last_messages.values("read_at")[:1]),
+                last_message_is_deleted=Subquery(last_messages.values("is_deleted")[:1]),
+                last_message_sender_id=Subquery(last_messages.values("sender_id")[:1]),
+                last_message_sender_email=Subquery(last_messages.values("sender__email")[:1]),
+                last_message_sender_first_name=Subquery(last_messages.values("sender__first_name")[:1]),
+                last_message_sender_last_name=Subquery(last_messages.values("sender__last_name")[:1]),
+            )
             .order_by("-updated_at")
         )
     
