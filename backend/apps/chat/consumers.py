@@ -119,23 +119,33 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         # Accept WebSocket connection
         await self.accept()
+
+        # Track whether group-based realtime fan-out is available.
+        self.realtime_enabled = True
         
-        # Join conversation group for real-time broadcasting
-        await self.channel_layer.group_add(
-            self.conversation_group_name,
-            self.channel_name
-        )
-        
-        # Broadcast user online status to conversation participants
-        await self.channel_layer.group_send(
-            self.conversation_group_name,
-            {
-                "type": "user_status",
-                "user_id": self.user.id,
-                "username": self.user.get_full_name(),
-                "status": "online",
-            }
-        )
+        try:
+            # Join conversation group for real-time broadcasting
+            await self.channel_layer.group_add(
+                self.conversation_group_name,
+                self.channel_name
+            )
+
+            # Broadcast user online status to conversation participants
+            await self.channel_layer.group_send(
+                self.conversation_group_name,
+                {
+                    "type": "user_status",
+                    "user_id": self.user.id,
+                    "username": self.user.get_full_name(),
+                    "status": "online",
+                }
+            )
+        except Exception:
+            # Keep socket open even if channel layer is unhealthy.
+            self.realtime_enabled = False
+            await self.send_error(
+                "Real-time channel is temporarily unavailable. Messages will still be delivered."
+            )
 
     async def disconnect(self, close_code):
         """
@@ -147,22 +157,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
             close_code (int): WebSocket close code
         """
         # Broadcast user offline status
-        if hasattr(self, "conversation_group_name"):
-            await self.channel_layer.group_send(
-                self.conversation_group_name,
-                {
-                    "type": "user_status",
-                    "user_id": self.user.id,
-                    "username": self.user.get_full_name(),
-                    "status": "offline",
-                }
-            )
-            
-            # Leave conversation group
-            await self.channel_layer.group_discard(
-                self.conversation_group_name,
-                self.channel_name
-            )
+        if hasattr(self, "conversation_group_name") and getattr(self, "realtime_enabled", False):
+            try:
+                await self.channel_layer.group_send(
+                    self.conversation_group_name,
+                    {
+                        "type": "user_status",
+                        "user_id": self.user.id,
+                        "username": self.user.get_full_name(),
+                        "status": "offline",
+                    }
+                )
+
+                # Leave conversation group
+                await self.channel_layer.group_discard(
+                    self.conversation_group_name,
+                    self.channel_name
+                )
+            except Exception:
+                pass
 
     async def receive(self, text_data):
         """
@@ -227,22 +240,32 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Save message to database
         message = await self.save_message(content)
         
-        # Broadcast message to all conversation participants
-        await self.channel_layer.group_send(
-            self.conversation_group_name,
-            {
-                "type": "chat_message",
-                "message_id": str(message.id),
-                "content": message.content,
-                "sender": {
-                    "id": self.user.id,
-                    "name": self.user.get_full_name(),
-                    "email": self.user.email,
-                },
-                "created_at": message.created_at.isoformat(),
-                "is_read": message.is_read,
-            }
-        )
+        event_payload = {
+            "type": "chat_message",
+            "message_id": str(message.id),
+            "content": message.content,
+            "sender": {
+                "id": self.user.id,
+                "name": self.user.get_full_name(),
+                "email": self.user.email,
+            },
+            "created_at": message.created_at.isoformat(),
+            "is_read": message.is_read,
+        }
+
+        # Broadcast message to all conversation participants when realtime works.
+        if getattr(self, "realtime_enabled", False):
+            try:
+                await self.channel_layer.group_send(
+                    self.conversation_group_name,
+                    event_payload,
+                )
+                return
+            except Exception:
+                self.realtime_enabled = False
+
+        # Fallback: deliver to current client to keep chat usable.
+        await self.chat_message(event_payload)
 
     async def handle_mark_read(self, data):
         """
@@ -263,16 +286,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
         success = await self.mark_message_read(message_id)
         
         if success:
-            # Broadcast read receipt to conversation participants
-            await self.channel_layer.group_send(
-                self.conversation_group_name,
-                {
-                    "type": "message_read",
-                    "message_id": message_id,
-                    "read_by_user_id": self.user.id,
-                    "read_at": timezone.now().isoformat(),
-                }
-            )
+            event_payload = {
+                "type": "message_read",
+                "message_id": message_id,
+                "read_by_user_id": self.user.id,
+                "read_at": timezone.now().isoformat(),
+            }
+
+            if getattr(self, "realtime_enabled", False):
+                try:
+                    # Broadcast read receipt to conversation participants
+                    await self.channel_layer.group_send(
+                        self.conversation_group_name,
+                        event_payload,
+                    )
+                    return
+                except Exception:
+                    self.realtime_enabled = False
+
+            await self.message_read(event_payload)
         else:
             await self.send_error("Failed to mark message as read")
 
@@ -282,15 +314,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         Broadcasts typing indicator to other conversation participants.
         """
-        await self.channel_layer.group_send(
-            self.conversation_group_name,
-            {
-                "type": "user_typing",
-                "user_id": self.user.id,
-                "username": self.user.get_full_name(),
-                "is_typing": True,
-            }
-        )
+        if not getattr(self, "realtime_enabled", False):
+            return
+
+        try:
+            await self.channel_layer.group_send(
+                self.conversation_group_name,
+                {
+                    "type": "user_typing",
+                    "user_id": self.user.id,
+                    "username": self.user.get_full_name(),
+                    "is_typing": True,
+                }
+            )
+        except Exception:
+            self.realtime_enabled = False
 
     async def handle_typing_stop(self):
         """
@@ -298,15 +336,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         Broadcasts stop typing indicator to other conversation participants.
         """
-        await self.channel_layer.group_send(
-            self.conversation_group_name,
-            {
-                "type": "user_typing",
-                "user_id": self.user.id,
-                "username": self.user.get_full_name(),
-                "is_typing": False,
-            }
-        )
+        if not getattr(self, "realtime_enabled", False):
+            return
+
+        try:
+            await self.channel_layer.group_send(
+                self.conversation_group_name,
+                {
+                    "type": "user_typing",
+                    "user_id": self.user.id,
+                    "username": self.user.get_full_name(),
+                    "is_typing": False,
+                }
+            )
+        except Exception:
+            self.realtime_enabled = False
 
     # Event handlers for channel layer messages
     async def chat_message(self, event):

@@ -1,4 +1,8 @@
 services:
+  - type: redis
+    name: bicare360-redis
+    ipAllowList: []
+
   - type: web
     name: Bicare360
     env: python
@@ -14,3 +18,42 @@ services:
         value: bicare360.onrender.com
       - key: CORS_ALLOWED_ORIGINS
         value: https://bicare360.onrender.com
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: bicare360-redis
+          property: connectionString
+
+  - type: worker
+    name: bicare360-celery-worker
+    env: python
+    rootDir: backend
+    buildCommand: uv sync --frozen
+    startCommand: uv run celery -A bicare360 worker -l info
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: SECRET_KEY
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: bicare360-redis
+          property: connectionString
+
+  - type: worker
+    name: bicare360-celery-beat
+    env: python
+    rootDir: backend
+    buildCommand: uv sync --frozen
+    startCommand: uv run celery -A bicare360 beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: SECRET_KEY
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: bicare360-redis
+          property: connectionString
