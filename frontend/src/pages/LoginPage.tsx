@@ -15,8 +15,6 @@ const LoginPage: React.FC = () => {
 
     if (!username.trim()) {
       errors.username = 'Username is required';
-    } else if (username.includes('@') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username)) {
-      errors.username = 'Please enter a valid email address';
     }
 
     if (!password) {
@@ -62,6 +60,10 @@ const LoginPage: React.FC = () => {
       } else if (err.message) {
         errorMessage = err.message;
       }
+
+      if (err.response?.status === 401) {
+        errorMessage = 'Invalid credentials. Nurse login requires username (e.g., nurse_demo), not email.';
+      }
       
       console.log('Showing error toast with message:', errorMessage);
       
@@ -102,7 +104,7 @@ const LoginPage: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-6" noValidate>
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Username or Email
+              Username
             </label>
             <input
               id="username"
@@ -117,8 +119,8 @@ const LoginPage: React.FC = () => {
               className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 dark:border-gray-600 ${
                 validationErrors.username ? 'border-red-300 dark:border-red-400 focus:ring-red-500' : 'border-gray-300'
               }`}
-              placeholder="Enter your username or email"
-              aria-label="Username or Email"
+              placeholder="Enter your username"
+              aria-label="Username"
               aria-invalid={!!validationErrors.username}
               aria-describedby={validationErrors.username ? 'username-error' : undefined}
               autoComplete="username"
@@ -200,7 +202,7 @@ const LoginPage: React.FC = () => {
         </form>
 
         <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-          <p>Demo credentials: nurse@test.com / test123</p>
+          <p>Demo credentials: nurse_demo / test123</p>
           <p className="mt-4">
             Not a nurse?{' '}
             <Link to="/patient/register" className="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium">
