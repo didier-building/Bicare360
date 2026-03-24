@@ -12,7 +12,7 @@ const LoginSelectionPage: React.FC = () => {
             BiCare360
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-400">
-            Healthcare Management System
+            Home-Care Coordination and Caregiver Support Platform
           </p>
         </div>
 

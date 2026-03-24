@@ -1,23 +1,70 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import './HomePage.css';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, user, checkAuth } = useAuthStore();
+  const { checkAuth } = useAuthStore();
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  const careJourneySteps = [
+    {
+      title: 'Discharge Plan Captured',
+      description: 'Clinical instructions and risk signals are organized from day one of home recovery.',
+    },
+    {
+      title: 'Care Team Aligned',
+      description: 'Nurses, caregivers, and patients work from the same care context and priorities.',
+    },
+    {
+      title: 'Daily Follow-Up Tracked',
+      description: 'Appointments, medications, and home-care tasks stay visible and measurable.',
+    },
+    {
+      title: 'Early Alerts Trigger Action',
+      description: 'Missed medication, missed appointments, and risk changes prompt timely intervention.',
+    },
+  ];
+
+  const audienceCards = [
+    {
+      title: 'Patients and Families',
+      description: 'See appointments, medications, and care progress in one simple home-care experience.',
+      href: '/patient/login',
+      cta: 'Patient Login',
+      toneClass: 'home-card-patient',
+    },
+    {
+      title: 'Nurses and Care Teams',
+      description: 'Prioritize risk, coordinate follow-up, and respond quickly with better care visibility.',
+      href: '/login',
+      cta: 'Staff Login',
+      toneClass: 'home-card-staff',
+    },
+    {
+      title: 'Caregivers',
+      description: 'Manage bookings, visit schedules, and communication for home support delivery.',
+      href: '/caregiver/login',
+      cta: 'Caregiver Login',
+      toneClass: 'home-card-caregiver',
+    },
+  ];
 
   useEffect(() => {
+    let isActive = true;
+
     const route = async () => {
-      // Check authentication status
       await checkAuth();
-      
-      // Route based on authentication and role
-      if (!isAuthenticated) {
-        // Show login selection
-        navigate('/login-selection', { replace: true });
-      } else {
-        // Route based on user role
+
+      if (!isActive) {
+        return;
+      }
+
+      const { isAuthenticated, user } = useAuthStore.getState();
+
+      if (isAuthenticated) {
         if (user?.role === 'nurse' || user?.role === 'staff') {
           navigate('/dashboard', { replace: true });
         } else if (user?.role === 'caregiver') {
@@ -25,20 +72,134 @@ const HomePage: React.FC = () => {
         } else {
           navigate('/patient/dashboard', { replace: true });
         }
+
+        return;
       }
+
+      setCheckingAuth(false);
     };
 
     route();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
+    return () => {
+      isActive = false;
+    };
+  }, [checkAuth, navigate]);
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f8faf7]">
+        <div className="text-center">
+          <LoadingSpinner size="lg" />
+          <p className="mt-4 text-gray-600">Preparing your care workspace...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <LoadingSpinner size="lg" />
-        <p className="mt-4 text-gray-600">Loading...</p>
-      </div>
-    </div>
+    <main className="home-root">
+      <header className="home-shell home-brand-bar home-stagger">
+        <Link to="/" className="home-brand-link" aria-label="BiCare360 home">
+          <img src="/logo.png" alt="BiCare360 logo" className="home-brand-logo" />
+          <span className="home-brand-name">BiCare360</span>
+        </Link>
+        <Link to="/login-selection" className="home-brand-login">Portal Login</Link>
+      </header>
+
+      <section className="home-hero">
+        <div className="home-hero-atmosphere" aria-hidden="true" />
+        <div className="home-shell home-stagger">
+          <p className="home-kicker">Post-Discharge Continuity Platform</p>
+          <h1 className="home-headline">From Hospital Discharge to Confident Home Recovery</h1>
+          <p className="home-subhead">
+            BiCare360 connects patients, nurses, and caregivers in one coordinated journey with reminders,
+            alerts, and real-time communication.
+          </p>
+          <div className="home-cta-row">
+            <Link to="/patient/login" className="home-btn home-btn-primary">Get Care at Home</Link>
+            <Link to="/login-selection" className="home-btn home-btn-secondary">Login to Your Portal</Link>
+          </div>
+          <p className="home-caption">Built for Rwanda&apos;s healthcare delivery context.</p>
+        </div>
+      </section>
+
+      <section className="home-shell home-grid-highlights home-stagger">
+        <article className="home-highlight-box">
+          <p className="home-highlight-number">3</p>
+          <p className="home-highlight-label">Integrated Portals</p>
+          <p className="home-highlight-text">Patient, staff, and caregiver experiences designed around one care journey.</p>
+        </article>
+        <article className="home-highlight-box">
+          <p className="home-highlight-number">24/7</p>
+          <p className="home-highlight-label">Care Visibility</p>
+          <p className="home-highlight-text">Appointments, medication adherence, and alerts in one operational view.</p>
+        </article>
+        <article className="home-highlight-box">
+          <p className="home-highlight-number">1</p>
+          <p className="home-highlight-label">Coordinated Journey</p>
+          <p className="home-highlight-text">From discharge instructions to home follow-up and recovery outcomes.</p>
+        </article>
+      </section>
+
+      <section className="home-shell home-section home-stagger">
+        <div className="home-section-head">
+          <h2>How BiCare360 Works</h2>
+          <p>Every step reduces care fragmentation and keeps people aligned.</p>
+        </div>
+        <div className="home-journey-grid">
+          {careJourneySteps.map((step, index) => (
+            <article key={step.title} className="home-journey-card">
+              <span className="home-step-pill">Step {index + 1}</span>
+              <h3>{step.title}</h3>
+              <p>{step.description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="home-shell home-section home-stagger">
+        <div className="home-section-head">
+          <h2>Choose Your Experience</h2>
+          <p>Each role gets a focused workflow while staying connected to the same patient journey.</p>
+        </div>
+        <div className="home-audience-grid">
+          {audienceCards.map((card) => (
+            <article key={card.title} className={`home-audience-card ${card.toneClass}`}>
+              <h3>{card.title}</h3>
+              <p>{card.description}</p>
+              <Link to={card.href} className="home-role-link">{card.cta}</Link>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="home-shell home-section">
+        <div className="home-rwanda-panel home-stagger">
+          <h2>Rwanda-First by Design</h2>
+          <p>
+            National ID workflows, local communication patterns, and multilingual support direction are built
+            into the platform to make coordination practical in everyday care delivery.
+          </p>
+          <div className="home-tag-row">
+            <span>National ID Workflows</span>
+            <span>Caregiver Coordination</span>
+            <span>Medication Adherence Alerts</span>
+            <span>Appointment Follow-Up</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="home-shell home-final-cta home-stagger">
+        <h2>Start Smarter Home-Care Coordination Today</h2>
+        <p>Launch your portal and keep care connected beyond discharge.</p>
+        <div className="home-cta-row">
+          <Link to="/patient/login" className="home-btn home-btn-primary">I am a Patient</Link>
+          <Link to="/login" className="home-btn home-btn-secondary">I am Staff/Nurse</Link>
+          <Link to="/caregiver/login" className="home-btn home-btn-tertiary">I am a Caregiver</Link>
+        </div>
+      </section>
+    </main>
   );
 };
 

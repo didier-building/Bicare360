@@ -77,6 +77,7 @@ export const useWebSocket = (
   onUserStatus?: (userId: number, status: 'online' | 'offline') => void,
   onError?: (error: string) => void
 ): UseWebSocketReturn => {
+  const REALTIME_COOLDOWN_MS = 60_000;
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -85,10 +86,44 @@ export const useWebSocket = (
   const maxReconnectAttempts = 5;
   const realtimeUnavailableRef = useRef(false);
 
+  const getCooldownKey = useCallback(
+    () => (conversationId ? `chat_ws_realtime_unavailable_until_${conversationId}` : null),
+    [conversationId]
+  );
+
+  const isCooldownActive = useCallback(() => {
+    const key = getCooldownKey();
+    if (!key) return false;
+    const untilRaw = sessionStorage.getItem(key);
+    if (!untilRaw) return false;
+    const until = Number(untilRaw);
+    if (Number.isNaN(until)) return false;
+    return Date.now() < until;
+  }, [getCooldownKey]);
+
+  const startCooldown = useCallback(() => {
+    const key = getCooldownKey();
+    if (!key) return;
+    sessionStorage.setItem(key, String(Date.now() + REALTIME_COOLDOWN_MS));
+  }, [REALTIME_COOLDOWN_MS, getCooldownKey]);
+
+  const clearCooldown = useCallback(() => {
+    const key = getCooldownKey();
+    if (!key) return;
+    sessionStorage.removeItem(key);
+  }, [getCooldownKey]);
+
   /**
    * Connect to WebSocket server
    */
   const connect = useCallback(() => {
+    if (isCooldownActive()) {
+      realtimeUnavailableRef.current = true;
+      shouldReconnectRef.current = false;
+      setIsConnected(false);
+      return;
+    }
+
     if (realtimeUnavailableRef.current) {
       return;
     }
@@ -190,6 +225,12 @@ export const useWebSocket = (
               // Backend reported channel-layer outage; avoid infinite reconnect storm.
               realtimeUnavailableRef.current = true;
               shouldReconnectRef.current = false;
+              startCooldown();
+
+              // Close gracefully from client side to avoid repeated 1011 reconnect churn.
+              if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+                wsRef.current.close(1000, 'Realtime unavailable fallback');
+              }
             }
             onError?.(data.error || 'Unknown error');
             break;
@@ -223,6 +264,10 @@ export const useWebSocket = (
       setIsConnected(false);
       wsRef.current = null;
 
+      if (realtimeUnavailableRef.current) {
+        return;
+      }
+
       // Attempt reconnection only for unexpected closures.
       if (shouldReconnectRef.current && event.code !== 1000 && reconnectAttempts.current < maxReconnectAttempts) {
         const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
@@ -237,7 +282,7 @@ export const useWebSocket = (
         onError?.('Connection lost. Please refresh the page.');
       }
     };
-  }, [conversationId, onMessage, onTyping, onUserStatus, onError]);
+  }, [conversationId, onMessage, onTyping, onUserStatus, onError, isCooldownActive, startCooldown]);
 
   /**
    * Send a chat message
@@ -309,9 +354,10 @@ export const useWebSocket = (
   const reconnect = useCallback(() => {
     realtimeUnavailableRef.current = false;
     shouldReconnectRef.current = true;
+    clearCooldown();
     reconnectAttempts.current = 0;
     connect();
-  }, [connect]);
+  }, [clearCooldown, connect]);
 
   // Connect on mount or when conversationId changes
   useEffect(() => {

@@ -1,0 +1,456 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;700&display=swap');
+
+.home-root {
+  background:
+    radial-gradient(1200px 500px at 90% 0%, rgba(34, 124, 112, 0.18), transparent 60%),
+    radial-gradient(800px 500px at 8% 12%, rgba(166, 205, 124, 0.16), transparent 62%),
+    linear-gradient(180deg, #f7fbf9 0%, #f3f8ff 48%, #f9faf7 100%);
+  color: #0f172a;
+  font-family: 'Manrope', 'Segoe UI', sans-serif;
+}
+
+.home-root * {
+  box-sizing: border-box;
+}
+
+.home-shell {
+  margin: 0 auto;
+  max-width: 1160px;
+  padding: 0 1rem;
+  width: 100%;
+}
+
+.home-brand-bar {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 1.1rem;
+}
+
+.home-brand-link {
+  align-items: center;
+  color: #0b3b4a;
+  display: inline-flex;
+  gap: 0.55rem;
+  text-decoration: none;
+}
+
+.home-brand-logo {
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
+  height: 42px;
+  width: 42px;
+}
+
+.home-brand-name {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.home-brand-login {
+  border: 1px solid #b8d2cf;
+  border-radius: 999px;
+  color: #0f766e;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.45rem 0.9rem;
+  text-decoration: none;
+}
+
+.home-brand-login:hover {
+  background-color: #ebf9f6;
+}
+
+.home-hero {
+  overflow: hidden;
+  padding: 4.5rem 0 2.5rem;
+  position: relative;
+}
+
+.home-hero .home-shell {
+  position: relative;
+  z-index: 1;
+}
+
+.home-hero-atmosphere {
+  background:
+    conic-gradient(from 220deg at 55% 50%, rgba(16, 185, 129, 0.24), rgba(20, 184, 166, 0.1), transparent),
+    radial-gradient(500px 200px at 45% 100%, rgba(2, 132, 199, 0.12), transparent);
+  border: 1px solid rgba(14, 116, 144, 0.15);
+  border-radius: 24px;
+  height: 320px;
+  left: 50%;
+  opacity: 0.88;
+  position: absolute;
+  top: 40px;
+  transform: translateX(-50%);
+  width: min(1160px, calc(100% - 2rem));
+}
+
+.home-kicker {
+  color: #0f766e;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.home-headline {
+  color: #0b3b4a;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: clamp(2rem, 4.7vw, 4rem);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin: 0;
+  max-width: 900px;
+}
+
+.home-subhead {
+  color: #334155;
+  font-size: clamp(1rem, 1.7vw, 1.2rem);
+  line-height: 1.7;
+  margin-top: 1.2rem;
+  max-width: 760px;
+}
+
+.home-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.7rem;
+}
+
+.home-btn {
+  border-radius: 12px;
+  font-weight: 700;
+  padding: 0.78rem 1.25rem;
+  text-decoration: none;
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.home-btn:hover {
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+  transform: translateY(-1px);
+}
+
+.home-btn-primary {
+  background-color: #0f766e;
+  color: #fff;
+}
+
+.home-btn-primary:hover {
+  background-color: #0c5e58;
+}
+
+.home-btn-secondary {
+  background-color: #ffffff;
+  border: 1px solid #bfd7d3;
+  color: #0b3b4a;
+}
+
+.home-btn-secondary:hover {
+  border-color: #86b7b0;
+}
+
+.home-btn-tertiary {
+  background-color: #1d4ed8;
+  color: #fff;
+}
+
+.home-btn-tertiary:hover {
+  background-color: #173ea9;
+}
+
+.home-caption {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+.home-grid-highlights {
+  align-items: stretch;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 1.1rem;
+}
+
+.home-highlight-box {
+  background-color: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(10, 80, 112, 0.13);
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  height: 100%;
+  padding: 1.2rem;
+}
+
+.home-highlight-number {
+  color: #0f766e;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.65rem;
+  margin: 0;
+}
+
+.home-highlight-label {
+  color: #0b3b4a;
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 0.22rem 0;
+  min-height: 2.6em;
+}
+
+.home-highlight-text {
+  color: #475569;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.home-section {
+  padding: 3rem 0 0.8rem;
+}
+
+.home-section-head {
+  max-width: 760px;
+}
+
+.home-section-head h2,
+.home-final-cta h2,
+.home-rwanda-panel h2 {
+  color: #0b3b4a;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: clamp(1.65rem, 2.8vw, 2.3rem);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.home-section-head p,
+.home-final-cta p,
+.home-rwanda-panel p {
+  color: #475569;
+  line-height: 1.7;
+  margin-top: 0.7rem;
+  max-width: 760px;
+}
+
+.home-journey-grid {
+  align-items: stretch;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 1.4rem;
+}
+
+.home-journey-card {
+  background: linear-gradient(150deg, #ffffff, #eef7f8);
+  border: 1px solid #d5e8eb;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  height: 100%;
+  min-height: 180px;
+  padding: 1.1rem 1rem;
+}
+
+.home-step-pill {
+  background-color: #0f766e;
+  border-radius: 999px;
+  color: #fff;
+  display: inline-block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.32rem 0.6rem;
+}
+
+.home-journey-card h3,
+.home-audience-card h3 {
+  color: #0f172a;
+  font-size: 1.05rem;
+  margin: 0.85rem 0 0.5rem;
+}
+
+.home-journey-card p,
+.home-audience-card p {
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.home-audience-grid {
+  align-items: stretch;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 1.35rem;
+}
+
+.home-audience-card {
+  border: 1px solid #d8e2e8;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  height: 100%;
+  min-height: 230px;
+  padding: 1.1rem 1rem;
+}
+
+.home-audience-card p {
+  flex: 1;
+}
+
+.home-card-patient {
+  background: linear-gradient(165deg, #ffffff 0%, #ecfdf5 100%);
+}
+
+.home-card-staff {
+  background: linear-gradient(165deg, #ffffff 0%, #eff6ff 100%);
+}
+
+.home-card-caregiver {
+  background: linear-gradient(165deg, #ffffff 0%, #fdf4ff 100%);
+}
+
+.home-role-link {
+  align-self: flex-start;
+  color: #0f766e;
+  font-weight: 700;
+  margin-top: auto;
+  padding-top: 1.3rem;
+  text-decoration: none;
+}
+
+.home-role-link:hover {
+  text-decoration: underline;
+}
+
+.home-rwanda-panel {
+  background:
+    radial-gradient(400px 200px at 10% 20%, rgba(16, 185, 129, 0.11), transparent),
+    linear-gradient(145deg, #f1f8f4, #f6f8ff);
+  border: 1px solid #d6e6df;
+  border-radius: 20px;
+  padding: 1.5rem;
+}
+
+.home-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.05rem;
+}
+
+.home-tag-row span {
+  background-color: #ffffff;
+  border: 1px solid #d3e4dc;
+  border-radius: 999px;
+  color: #0f172a;
+  font-size: 0.82rem;
+  font-weight: 600;
+  max-width: 100%;
+  padding: 0.4rem 0.75rem;
+  text-align: center;
+}
+
+.home-final-cta {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 2.8rem;
+  padding-bottom: 4.2rem;
+}
+
+.home-stagger {
+  animation: home-rise 540ms ease-out both;
+}
+
+.home-stagger:nth-child(2) {
+  animation-delay: 100ms;
+}
+
+.home-stagger:nth-child(3) {
+  animation-delay: 180ms;
+}
+
+.home-stagger:nth-child(4) {
+  animation-delay: 250ms;
+}
+
+@keyframes home-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1024px) {
+  .home-grid-highlights,
+  .home-audience-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .home-brand-bar {
+    padding-top: 0.9rem;
+  }
+
+  .home-brand-name {
+    font-size: 1.1rem;
+  }
+
+  .home-brand-logo {
+    height: 38px;
+    width: 38px;
+  }
+
+  .home-brand-login {
+    font-size: 0.82rem;
+    padding: 0.4rem 0.72rem;
+  }
+
+  .home-hero {
+    padding-top: 2.4rem;
+  }
+
+  .home-hero-atmosphere {
+    height: 220px;
+    top: 24px;
+  }
+
+  .home-cta-row {
+    flex-direction: column;
+  }
+
+  .home-btn {
+    text-align: center;
+    width: 100%;
+  }
+
+  .home-grid-highlights,
+  .home-journey-grid,
+  .home-audience-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-final-cta {
+    margin-top: 2rem;
+  }
+}

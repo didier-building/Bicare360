@@ -98,7 +98,7 @@ const LoginPage: React.FC = () => {
             <img src="/logo.png" alt="BiCare360 Logo" className="h-20 w-20 object-contain" />
           </div>
           <h1 className="text-3xl font-bold text-primary-600 dark:text-primary-400">BiCare360</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">Post-Discharge Healthcare Management</p>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">Post-Discharge Home-Care Coordination</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6" noValidate>
