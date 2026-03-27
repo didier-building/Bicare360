@@ -62,28 +62,67 @@ const LoginPage: React.FC = () => {
       }
 
       if (err.response?.status === 401) {
-        errorMessage = 'Invalid credentials. Nurse login requires username (e.g., nurse_demo), not email.';
+        // Check if this is a role mismatch error
+        const responseData = err.response?.data || {};
+        if (responseData.user_role && responseData.user_role !== 'staff') {
+          const roleDisplayMap: { [key: string]: string } = {
+            'patient': 'patient',
+            'caregiver': 'caregiver'
+          };
+          const detectedRole = roleDisplayMap[responseData.user_role] || responseData.user_role;
+          const portalMap: { [key: string]: string } = {
+            'patient': '/patient/login',
+            'caregiver': '/caregiver/login'
+          };
+          
+          errorMessage = `This account belongs to a ${detectedRole}. Please use the ${detectedRole} login page instead.`;
+          
+          // Show role-mismatch-specific toast with link suggestion
+          toast.error((t) => (
+            <div className="flex flex-col gap-2">
+              <p>{errorMessage}</p>
+              <Link 
+                to={portalMap[responseData.user_role] || '/'}
+                className="text-blue-200 underline font-semibold text-sm hover:text-blue-100"
+              >
+                Go to {detectedRole} portal →
+              </Link>
+            </div>
+          ), {
+            duration: 20000,
+            style: {
+              background: '#dc2626',
+              color: '#fff',
+              fontSize: '15px',
+              fontWeight: '600',
+              padding: '20px 28px',
+              minWidth: '350px',
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3)',
+            },
+            icon: '❌',
+          });
+        } else {
+          errorMessage = 'Invalid credentials. Please check your username and password and try again.';
+          toast.error(errorMessage, {
+            duration: 15000,
+            style: {
+              background: '#dc2626',
+              color: '#fff',
+              fontSize: '15px',
+              fontWeight: '600',
+              padding: '20px 28px',
+              minWidth: '350px',
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3)',
+            },
+            icon: '❌',
+          });
+        }
       }
       
       console.log('Showing error toast with message:', errorMessage);
       
       // Clear password field on error
       setPassword('');
-      
-      // Show toast that persists
-      toast.error(errorMessage, {
-        duration: 15000,
-        style: {
-          background: '#dc2626',
-          color: '#fff',
-          fontSize: '15px',
-          fontWeight: '600',
-          padding: '20px 28px',
-          minWidth: '350px',
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3)',
-        },
-        icon: '❌',
-      });
       
       // Do NOT navigate or reload - stay on login page
       return false;
@@ -202,7 +241,9 @@ const LoginPage: React.FC = () => {
         </form>
 
         <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-          <p>Demo credentials: nurse_demo / test123</p>
+          <p>
+            Use your assigned staff account credentials. If you need access, contact your organization administrator.
+          </p>
           <p className="mt-4">
             Not a nurse?{' '}
             <Link to="/patient/register" className="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium">

@@ -1,5 +1,8 @@
 # BiCare360 - Quick Access Guide
 
+> DEV ONLY: This guide is for internal development/QA and includes test-access details.
+> Do not share externally or use test credentials in production.
+
 **Date**: March 7, 2026  
 **Status**: Servers Running - Ready for Testing
 

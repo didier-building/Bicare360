@@ -1,4 +1,7 @@
 """
+DEV ONLY: Creates patient/nurse demo chat data for local testing.
+Do not run in production and do not expose demo credentials externally.
+
 Create Patient-Nurse Chat Demo Data
 
 Creates sample patient and nurse users with a conversation for testing the chat feature.

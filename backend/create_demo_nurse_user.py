@@ -1,4 +1,7 @@
 """
+DEV ONLY: Creates/updates a demo nurse account for local testing.
+Do not run in production and do not expose these credentials externally.
+
 Create a demo nurse user with email nurse@test.com and password test123.
 """
 from django.contrib.auth.models import User

@@ -1,5 +1,8 @@
 # BiCare360 Portal Access Guide
 
+> DEV ONLY: Internal testing and architecture notes.
+> Do not distribute externally with any local/test access details.
+
 ## 🏥 **Portal Structure Explained**
 
 BiCare360 currently has **2 portals**, not 3. Here's why:

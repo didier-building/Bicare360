@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 """
+DEV ONLY: Creates local test users with known credentials for development/testing.
+Do not use in production and do not expose generated credentials externally.
+
 Create test users for all portal types with known credentials.
 Run: python create_test_users.py
 """

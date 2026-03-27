@@ -1,5 +1,8 @@
 # BiCare360 Integration Testing Guide
 
+> DEV ONLY: Internal integration testing reference.
+> Do not share externally if it contains test accounts, local endpoints, or non-production setup details.
+
 **Date**: March 7, 2026  
 **Status**: Ready for End-to-End Testing
 

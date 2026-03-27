@@ -1,4 +1,7 @@
 """
+DEV ONLY: Creates local demo users and chat messages for development/testing.
+Do not run in production and do not expose demo credentials externally.
+
 Create Demo Data for Chat Feature
 
 Creates sample users and conversations for testing the chat feature.

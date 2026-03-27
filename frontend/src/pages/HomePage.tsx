@@ -31,21 +31,21 @@ const HomePage: React.FC = () => {
   const audienceCards = [
     {
       title: 'Patients and Families',
-      description: 'See appointments, medications, and care progress in one simple home-care experience.',
+      description: 'Follow your care plan with appointments, medications, daily goals (including nutrition), and key medical updates.',
       href: '/patient/login',
       cta: 'Patient Login',
       toneClass: 'home-card-patient',
     },
     {
       title: 'Nurses and Care Teams',
-      description: 'Prioritize risk, coordinate follow-up, and respond quickly with better care visibility.',
+      description: 'Monitor patient follow-up, manage alerts, review care progress, and coordinate next care actions.',
       href: '/login',
       cta: 'Staff Login',
       toneClass: 'home-card-staff',
     },
     {
       title: 'Caregivers',
-      description: 'Manage bookings, visit schedules, and communication for home support delivery.',
+      description: 'Manage bookings, track home-care visits, and support patients through coordinated communication.',
       href: '/caregiver/login',
       cta: 'Caregiver Login',
       toneClass: 'home-card-caregiver',
@@ -197,6 +197,29 @@ const HomePage: React.FC = () => {
           <Link to="/patient/login" className="home-btn home-btn-primary">I am a Patient</Link>
           <Link to="/login" className="home-btn home-btn-secondary">I am Staff/Nurse</Link>
           <Link to="/caregiver/login" className="home-btn home-btn-tertiary">I am a Caregiver</Link>
+        </div>
+      </section>
+
+      <section className="home-shell home-trust-signals home-stagger">
+        <div className="home-trust-header">
+          <p className="home-trust-label">Why BiCare360 Patients & Teams Choose Us</p>
+        </div>
+        <div className="home-trust-grid">
+          <article className="home-trust-card">
+            <div className="home-trust-icon">🔒</div>
+            <h3>Role-Based Secure Access</h3>
+            <p>Every user gets role-specific, protected access to ensure privacy and appropriate care coordination.</p>
+          </article>
+          <article className="home-trust-card">
+            <div className="home-trust-icon">👥</div>
+            <h3>Built for Patients, Caregivers & Care Teams</h3>
+            <p>Platform designed for all care stakeholders to work together seamlessly in one coordinated journey.</p>
+          </article>
+          <article className="home-trust-card">
+            <div className="home-trust-icon">✓</div>
+            <h3>Private, Coordinated Home-Care Support</h3>
+            <p>Supports safer continuity of care from discharge to home with encrypted communication and alerts.</p>
+          </article>
         </div>
       </section>
     </main>

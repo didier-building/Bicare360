@@ -92,6 +92,22 @@ export default function PatientLoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
+        // Handle role mismatch error
+        if (response.status === 401 && data.user_role && data.user_role !== 'patient') {
+          const roleDisplayMap: { [key: string]: string } = {
+            'staff': 'staff/nurse',
+            'caregiver': 'caregiver'
+          };
+          const portalMap: { [key: string]: string } = {
+            'staff': '/login',
+            'caregiver': '/caregiver/login'
+          };
+          const detectedRole = roleDisplayMap[data.user_role] || data.user_role;
+          
+          setApiError(`This account belongs to a ${detectedRole}. Please use the ${detectedRole} portal (${portalMap[data.user_role] || '/'}) instead.`);
+          return;
+        }
+        
         // Handle API errors
         if (data.errors && typeof data.errors === 'object') {
           // Server-side field validation errors

@@ -108,6 +108,25 @@ export default function CaregiverLoginPage() {
       const data: CaregiverLoginResponse = await response.json();
 
       if (!response.ok) {
+        // Handle role mismatch error
+        if (response.status === 401 && data.user?.role && data.user.role !== 'caregiver') {
+          const roleDisplayMap: { [key: string]: string } = {
+            'staff': 'staff/nurse',
+            'patient': 'patient'
+          };
+          const portalMap: { [key: string]: string } = {
+            'staff': '/login',
+            'patient': '/patient/login'
+          };
+          const detectedRole = roleDisplayMap[data.user.role] || data.user.role;
+          const errorMsg = `This account belongs to a ${detectedRole}. Please use the ${detectedRole} portal instead.`;
+          
+          setApiError(errorMsg);
+          toast.error(errorMsg, { duration: 8000 });
+          setIsLoading(false);
+          return;
+        }
+        
         // Handle API errors
         setApiError(data.error || 'Login failed. Please try again.');
         setIsLoading(false);

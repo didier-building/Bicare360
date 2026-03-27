@@ -1,5 +1,8 @@
 # BiCare360 - Login Credentials & Testing Guide
 
+> DEV ONLY: This guide contains local test-access details for internal development/QA.
+> Do not share externally or use these credentials in production.
+
 **Last Updated**: March 9, 2026  
 **Status**: All test users created and verified
 

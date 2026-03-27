@@ -82,29 +82,18 @@ const LoginSelectionPage: React.FC = () => {
           </Link>
         </div>
 
-        {/* Footer info */}
-        <div className="mt-12 text-center text-gray-600 dark:text-gray-400 text-sm">
-          <p className="mb-3 font-medium">Test Credentials:</p>
-          <div className="mt-3 space-y-2 max-w-2xl mx-auto">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
-              <p className="font-semibold text-blue-600 dark:text-blue-400">Patient:</p>
-              <p className="text-xs mt-1">
-                <strong>Username:</strong> patient1 | <strong>Password:</strong> Patient@2026
-              </p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
-              <p className="font-semibold text-green-600 dark:text-green-400">Staff:</p>
-              <p className="text-xs mt-1">
-                <strong>Username:</strong> nurse1 | <strong>Password:</strong> Nurse@2026
-              </p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
-              <p className="font-semibold text-purple-600 dark:text-purple-400">Caregiver:</p>
-              <p className="text-xs mt-1">
-                <strong>Email:</strong> caregiver@test.com | <strong>Password:</strong> Caregiver@2026
-              </p>
-            </div>
+        {/* Support info */}
+        <div className="mt-12 text-center text-gray-600 dark:text-gray-400 text-sm max-w-2xl mx-auto">
+          <div className="inline-block bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg px-6 py-4 mb-4">
+            <p className="font-semibold text-blue-900 dark:text-blue-300 text-base">
+              ✓ Secure role-based access for patients, caregivers, and care teams
+            </p>
           </div>
+          <p className="font-medium mt-4">Need portal access?</p>
+          <p className="mt-2">
+            Please use your assigned account details from your organization administrator.
+            If you do not have an account, contact support or your care coordinator.
+          </p>
         </div>
       </div>
     </div>
