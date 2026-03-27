@@ -114,10 +114,6 @@ export default function CaregiverLoginPage() {
             'staff': 'staff/nurse',
             'patient': 'patient'
           };
-          const portalMap: { [key: string]: string } = {
-            'staff': '/login',
-            'patient': '/patient/login'
-          };
           const detectedRole = roleDisplayMap[data.user.role] || data.user.role;
           const errorMsg = `This account belongs to a ${detectedRole}. Please use the ${detectedRole} portal instead.`;
           

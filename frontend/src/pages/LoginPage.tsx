@@ -78,7 +78,7 @@ const LoginPage: React.FC = () => {
           errorMessage = `This account belongs to a ${detectedRole}. Please use the ${detectedRole} login page instead.`;
           
           // Show role-mismatch-specific toast with link suggestion
-          toast.error((t) => (
+          toast.error(() => (
             <div className="flex flex-col gap-2">
               <p>{errorMessage}</p>
               <Link 
