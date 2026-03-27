@@ -33,7 +33,9 @@ const HomePage: React.FC = () => {
       title: 'Patients and Families',
       description: 'Follow your care plan with appointments, medications, daily goals (including nutrition), and key medical updates.',
       href: '/patient/login',
+      signupHref: '/patient/register',
       cta: 'Patient Login',
+      ctaSignup: 'Create Account',
       toneClass: 'home-card-patient',
     },
     {
@@ -117,8 +119,8 @@ const HomePage: React.FC = () => {
             alerts, and real-time communication.
           </p>
           <div className="home-cta-row">
-            <Link to="/patient/login" className="home-btn home-btn-primary">Get Care at Home</Link>
-            <Link to="/login-selection" className="home-btn home-btn-secondary">Login to Your Portal</Link>
+            <Link to="/patient/register" className="home-btn home-btn-primary">Sign Up as Patient</Link>
+            <Link to="/login-selection" className="home-btn home-btn-secondary">Already Have Account?</Link>
           </div>
           <p className="home-caption">Built for Rwanda&apos;s healthcare delivery context.</p>
         </div>
@@ -168,7 +170,12 @@ const HomePage: React.FC = () => {
             <article key={card.title} className={`home-audience-card ${card.toneClass}`}>
               <h3>{card.title}</h3>
               <p>{card.description}</p>
-              <Link to={card.href} className="home-role-link">{card.cta}</Link>
+              <div className="home-role-actions">
+                <Link to={card.href} className="home-role-link">{card.cta}</Link>
+                {(card as any).signupHref && (
+                  <Link to={(card as any).signupHref} className="home-role-link home-role-link-secondary">{(card as any).ctaSignup}</Link>
+                )}
+              </div>
             </article>
           ))}
         </div>
@@ -191,12 +198,17 @@ const HomePage: React.FC = () => {
       </section>
 
       <section className="home-shell home-final-cta home-stagger">
-        <h2>Start Smarter Home-Care Coordination Today</h2>
-        <p>Launch your portal and keep care connected beyond discharge.</p>
-        <div className="home-cta-row">
-          <Link to="/patient/login" className="home-btn home-btn-primary">I am a Patient</Link>
-          <Link to="/login" className="home-btn home-btn-secondary">I am Staff/Nurse</Link>
-          <Link to="/caregiver/login" className="home-btn home-btn-tertiary">I am a Caregiver</Link>
+        <h2>Ready to Get Started?</h2>
+        <p>New users can sign up, or existing users can log in to access their portal.</p>
+        <div className="home-cta-dual-row">
+          <div className="home-cta-group">
+            <p className="home-cta-group-label">New Patient?</p>
+            <Link to="/patient/register" className="home-btn home-btn-primary">Create Patient Account</Link>
+          </div>
+          <div className="home-cta-group">
+            <p className="home-cta-group-label">Have an Account?</p>
+            <Link to="/login-selection" className="home-btn home-btn-secondary">Sign In Here</Link>
+          </div>
         </div>
       </section>
 

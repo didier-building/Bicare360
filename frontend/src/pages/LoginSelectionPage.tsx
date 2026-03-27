@@ -82,6 +82,69 @@ const LoginSelectionPage: React.FC = () => {
           </Link>
         </div>
 
+        {/* Sign Up Section */}
+        <div className="mt-12 grid md:grid-cols-3 gap-6">
+          {/* Patient Sign Up */}
+          <Link
+            to="/patient/register"
+            className="group bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-2 border-blue-200 dark:border-blue-700 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-8 hover:scale-105"
+          >
+            <div className="flex flex-col items-center text-center h-full">
+              <div className="w-14 h-14 bg-blue-100 dark:bg-blue-800 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-200 dark:group-hover:bg-blue-700 transition-colors">
+                <span className="text-2xl">➕</span>
+              </div>
+              <h3 className="text-lg font-bold text-blue-900 dark:text-blue-200 mb-2">
+                New Patient?
+              </h3>
+              <p className="text-blue-700 dark:text-blue-300 text-sm mb-4 flex-1">
+                Create your account and start managing your health journey
+              </p>
+              <span className="inline-block px-4 py-2 bg-blue-200 dark:bg-blue-700 text-blue-900 dark:text-blue-100 rounded-lg font-medium text-sm group-hover:bg-blue-300 dark:group-hover:bg-blue-600 transition-colors">
+                Sign Up as Patient
+              </span>
+            </div>
+          </Link>
+
+          {/* Staff/Caregiver Info */}
+          <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-2 border-amber-200 dark:border-amber-700 rounded-2xl p-8">
+            <div className="flex flex-col items-center text-center h-full">
+              <div className="w-14 h-14 bg-amber-100 dark:bg-amber-800 rounded-full flex items-center justify-center mb-4">
+                <span className="text-2xl">ℹ️</span>
+              </div>
+              <h3 className="text-lg font-bold text-amber-900 dark:text-amber-200 mb-2">
+                Staff or Caregiver?
+              </h3>
+              <p className="text-amber-700 dark:text-amber-300 text-sm flex-1 mb-4">
+                Your organization administrator creates your account for secure access
+              </p>
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                Contact your administrator for access
+              </p>
+            </div>
+          </div>
+
+          {/* Back to Login */}
+          <div className="bg-gradient-to-br from-gray-50 to-slate-50 dark:from-gray-800 dark:to-slate-800 border-2 border-gray-300 dark:border-gray-600 rounded-2xl p-8">
+            <div className="flex flex-col items-center text-center h-full">
+              <div className="w-14 h-14 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
+                <span className="text-2xl">🔑</span>
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                Already Registered?
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 flex-1">
+                Portal access is available to authorized users across all roles
+              </p>
+              <Link
+                to="/login-selection"
+                className="inline-block px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium text-sm hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+              >
+                Return to Login
+              </Link>
+            </div>
+          </div>
+        </div>
+
         {/* Support info */}
         <div className="mt-12 text-center text-gray-600 dark:text-gray-400 text-sm max-w-2xl mx-auto">
           <div className="inline-block bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg px-6 py-4 mb-4">
@@ -89,10 +152,9 @@ const LoginSelectionPage: React.FC = () => {
               ✓ Secure role-based access for patients, caregivers, and care teams
             </p>
           </div>
-          <p className="font-medium mt-4">Need portal access?</p>
+          <p className="font-medium mt-4">New to BiCare360?</p>
           <p className="mt-2">
-            Please use your assigned account details from your organization administrator.
-            If you do not have an account, contact support or your care coordinator.
+            Patients can create an account instantly. Staff and caregivers should contact their organization administrator for portal access.
           </p>
         </div>
       </div>
